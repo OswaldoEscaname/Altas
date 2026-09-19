@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Inventario · Almacén Universal</title>
+    <!-- Tailwind CSS vía CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS (xlsx) vía CDN -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Fuente Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+        .validation-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+        .validation-ok { border-color: #22c55e !important; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+    <!-- HEADER -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-500 p-2 rounded-lg">
+                    <i class="fa-solid fa-warehouse text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Inventario Universal</h1>
+                    <p class="text-xs text-slate-400">Control de ubicaciones y reservas · Sept 2026</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="totalBadge" class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-slate-800 text-xs font-medium">
+                    <i class="fa-solid fa-boxes-stacked mr-1.5 text-indigo-400"></i>
+                    <span id="totalCount">0</span> ubicaciones
+                </span>
+                <button onclick="openExportModal()" class="bg-emerald-600 hover:bg-emerald-500 transition text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                    <i class="fa-solid fa-file-export"></i> Exportar XLSX
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+
+        <!-- ESTADÍSTICAS -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium uppercase">Total</p>
+                        <p id="statTotal" class="text-2xl font-bold text-slate-800">0</p>
+                    </div>
+                    <div class="bg-indigo-100 text-indigo-600 p-2.5 rounded-lg"><i class="fa-solid fa-layer-group"></i></div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium uppercase">Disponibles</p>
+                        <p id="statDisponible" class="text-2xl font-bold text-emerald-600">0</p>
+                    </div>
+                    <div class="bg-emerald-100 text-emerald-600 p-2.5 rounded-lg"><i class="fa-solid fa-circle-check"></i></div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium uppercase">Ocupadas</p>
+                        <p id="statOcupada" class="text-2xl font-bold text-amber-600">0</p>
+                    </div>
+                    <div class="bg-amber-100 text-amber-600 p-2.5 rounded-lg"><i class="fa-solid fa-box"></i></div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium uppercase">Reservas (Ub2)</p>
+                        <p id="statReserva" class="text-2xl font-bold text-purple-600">0</p>
+                    </div>
+                    <div class="bg-purple-100 text-purple-600 p-2.5 rounded-lg"><i class="fa-solid fa-bookmark"></i></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FORMULARIO ALTA -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
+            <div class="px-5 py-4 border-b border-slate-200 flex items-center gap-2">
+                <i class="fa-solid fa-plus-circle text-indigo-600"></i>
+                <h2 class="font-semibold text-slate-800">Alta de Ubicación</h2>
+            </div>
+            <form id="formAlta" class="p-5 grid grid-cols-1 md:grid-cols-12 gap-4" novalidate>
+                <!-- Ubicación 1 -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Ubicación 1 <span class="text-slate-400">(pasillo)</span></label>
+                    <input type="text" id="ub1" list="listUb1" autocomplete="off" maxlength="2"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none uppercase"
+                           placeholder="Ej: A1">
+                    <p id="err-ub1" class="text-xs text-red-600 mt-1 hidden"></p>
+                </div>
+                <!-- Ubicación 2 -->
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Ubicación 2 <span class="text-purple-500">(reserva)</span></label>
+                    <input type="text" id="ub2" list="listUb2" autocomplete="off" maxlength="6"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none uppercase"
+                           placeholder="Ej: R-01">
+                    <p id="err-ub2" class="text-xs text-red-600 mt-1 hidden"></p>
+                </div>
+                <!-- SKU -->
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">SKU / Código</label>
+                    <input type="text" id="sku" list="listSku" autocomplete="off" maxlength="15"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none uppercase"
+                           placeholder="Ej: UNI-00123">
+                    <p id="err-sku" class="text-xs text-red-600 mt-1 hidden"></p>
+                </div>
+                <!-- Estado -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Estado</label>
+                    <select id="estado" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="Disponible">Disponible</option>
+                        <option value="Ocupada">Ocupada</option>
+                        <option value="Reserva">Reserva</option>
+                    </select>
+                </div>
+                <!-- Cantidad -->
+                <div class="md:col-span-1">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Cant.</label>
+                    <input type="number" id="cantidad" min="0" value="0"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <!-- Botón -->
+                <div class="md:col-span-1 flex items-end">
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-lg transition flex items-center justify-center gap-1.5 text-sm">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar
+                    </button>
+                </div>
+                <p id="formMsg" class="md:col-span-12 text-sm hidden"></p>
+
+                <!-- Datalists para autocompletado -->
+                <datalist id="listUb1"></datalist>
+                <datalist id="listUb2"></datalist>
+                <datalist id="listSku"></datalist>
+            </form>
+        </section>
+
+        <!-- FILTROS Y TABLA -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-indigo-600"></i>
+                    <h2 class="font-semibold text-slate-800">Ubicaciones registradas</h2>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="filtroTexto" placeholder="Buscar..." class="pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-44">
+                    </div>
+                    <select id="filtroEstado" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="">Todos los estados</option>
+                        <option value="Disponible">Disponible</option>
+                        <option value="Ocupada">Ocupada</option>
+                        <option value="Reserva">Reserva</option>
+                    </select>
+                    <button onclick="limpiarTodo()" class="text-xs text-red-600 hover:text-red-700 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg transition">
+                        <i class="fa-solid fa-trash-can mr-1"></i>Vaciar
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-medium">Ubicación 1</th>
+                            <th class="px-4 py-3 text-left font-medium">Ubicación 2</th>
+                            <th class="px-4 py-3 text-left font-medium">SKU</th>
+                            <th class="px-4 py-3 text-left font-medium">Estado</th>
+                            <th class="px-4 py-3 text-right font-medium">Cantidad</th>
+                            <th class="px-4 py-3 text-center font-medium">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody" class="divide-y divide-slate-100">
+                        <!-- filas dinámicas -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptyState" class="py-12 text-center text-slate-400">
+                <i class="fa-solid fa-inbox text-4xl mb-3 text-slate-300"></i>
+                <p class="text-sm">No hay ubicaciones registradas.</p>
+                <p class="text-xs mt-1">Completa el formulario superior para comenzar.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-slate-400">
+        <p>Sistema de inventario · Validación predictiva basada en nomenclatura Universal</p>
+    </footer>
+
+    <!-- MODAL EXPORTAR -->
+    <div id="exportModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 fade-in">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-emerald-100 text-emerald-600 p-2.5 rounded-lg"><i class="fa-solid fa-lock"></i></div>
+                <div>
+                    <h3 class="font-semibold text-slate-800">Exportación protegida</h3>
+                    <p class="text-xs text-slate-500">Ingresa la contraseña para continuar</p>
+                </div>
+            </div>
+            <input type="password" id="exportPass" placeholder="Contraseña" autocomplete="off"
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none mb-2">
+            <p id="exportError" class="text-xs text-red-600 mb-2 hidden">Contraseña incorrecta.</p>
+            <div class="flex gap-2 mt-3">
+                <button onclick="closeExportModal()" class="flex-1 border border-slate-300 text-slate-600 hover:bg-slate-50 py-2 rounded-lg text-sm font-medium transition">Cancelar</button>
+                <button onclick="confirmExport()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg text-sm font-medium transition">Exportar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR BORRADO -->
+    <div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 fade-in">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-red-100 text-red-600 p-2.5 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div>
+                    <h3 class="font-semibold text-slate-800">Confirmar baja</h3>
+                    <p class="text-xs text-slate-500">Esta acción no se puede deshacer</p>
+                </div>
+            </div>
+            <p class="text-sm text-slate-600 mb-4" id="deleteMsg">¿Eliminar esta ubicación?</p>
+            <div class="flex gap-2">
+                <button onclick="closeDeleteModal()" class="flex-1 border border-slate-300 text-slate-600 hover:bg-slate-50 py-2 rounded-lg text-sm font-medium transition">Cancelar</button>
+                <button onclick="confirmDelete()" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg text-sm font-medium transition">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+/* =========================================================
+   PATRONES Y REGLAS EXTRAÍDOS DEL EXCEL UNIVERSAL_SEPTIEMBRE_2026
+   - Ubicación 1: 1 letra + 1 dígito  (A1-Z9). Pasillos.
+   - Ubicación 2: 'R-' + 2 dígitos   (R-01 a R-99). Zona de reservas.
+   - SKU: "UNI-" + 5 dígitos         (UNI-00001 a UNI-99999).
+   - Estado: Disponible | Ocupada | Reserva.
+   - Cantidad: entero >= 0.
+   ========================================================= */
+const REGEX = {
+    ub1: /^[A-Z][0-9]$/,
+    ub2: /^R-[0-9]{2}$/,
+    sku: /^UNI-[0-9]{5}$/
+};
+
+// Estado principal (inicia vacío, según requisito)
+let inventario = [];
+let deleteTargetId = null;
+
+/* ---------- Utilidades ---------- */
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function saveState() {
+    // Persistencia local opcional (no precarga, sólo guarda cambios del usuario)
+    try { localStorage.setItem('inventario_universal', JSON.stringify(inventario)); } catch(e){}
+}
+function loadState() {
+    try {
+        const raw = localStorage.getItem('inventario_universal');
+        if (raw) inventario = JSON.parse(raw) || [];
+    } catch(e){ inventario = []; }
+}
+
+/* ---------- Render ---------- */
+function render() {
+    // Actualizar datalists con valores ya existentes (autocompletado predictivo)
+    const ub1Set = new Set(), ub2Set = new Set(), skuSet = new Set();
+    inventario.forEach(r => {
+        if (r.ub1) ub1Set.add(r.ub1);
+        if (r.ub2) ub2Set.add(r.ub2);
+        if (r.sku) skuSet.add(r.sku);
+    });
+    $('listUb1').innerHTML = [...ub1Set].map(v => `<option value="${v}">`).join('');
+    $('listUb2').innerHTML = [...ub2Set].map(v => `<option value="${v}">`).join('');
+    $('listSku').innerHTML = [...skuSet].map(v => `<option value="${v}">`).join('');
+
+    // Filtros
+    const texto = $('filtroTexto').value.trim().toUpperCase();
+    const estado = $('filtroEstado').value;
+    const filtrados = inventario.filter(r => {
+        if (estado && r.estado !== estado) return false;
+        if (texto) {
+            const blob = `${r.ub1} ${r.ub2} ${r.sku}`.toUpperCase();
+            if (!blob.includes(texto)) return false;
+        }
+        return true;
+    });
+
+    // Tabla
+    const tbody = $('tbody');
+    tbody.innerHTML = filtrados.map(r => `
+        <tr class="hover:bg-slate-50 transition">
+            <td class="px-4 py-3 font-medium text-slate-700">${r.ub1 || '—'}</td>
+            <td class="px-4 py-3 font-medium text-purple-600">${r.ub2 || '—'}</td>
+            <td class="px-4 py-3 font-mono text-xs text-slate-600">${r.sku || '—'}</td>
+            <td class="px-4 py-3">${estadoBadge(r.estado)}</td>
+            <td class="px-4 py-3 text-right font-medium">${r.cantidad}</td>
+            <td class="px-4 py-3 text-center">
+                <button onclick="askDelete('${r.id}')" class="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition" title="Dar de baja">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+
+    // Empty state
+    $('emptyState').style.display = filtrados.length === 0 ? 'block' : 'none';
+
+    // Estadísticas
+    const total = inventario.length;
+    const disp = inventario.filter(r => r.estado === 'Disponible').length;
+    const ocup = inventario.filter(r => r.estado === 'Ocupada').length;
+    const res  = inventario.filter(r => r.estado === 'Reserva' || (r.ub2 && r.ub2.startsWith('R-'))).length;
+    $('statTotal').textContent = total;
+    $('statDisponible').textContent = disp;
+    $('statOcupada').textContent = ocup;
+    $('statReserva').textContent = res;
+    $('totalCount').textContent = total;
+}
+
+function estadoBadge(estado) {
+    const map = {
+        'Disponible': 'bg-emerald-100 text-emerald-700',
+        'Ocupada': 'bg-amber-100 text-amber-700',
+        'Reserva': 'bg-purple-100 text-purple-700'
+    };
+    return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${map[estado] || 'bg-slate-100 text-slate-600'}">${estado}</span>`;
+}
+
+/* ---------- Validación en tiempo real ---------- */
+function validateField(id, regex) {
+    const el = $(id);
+    const errEl = $('err-' + id);
+    const val = el.value.trim().toUpperCase();
+    el.value = val;
+
+    if (val === '') {
+        el.classList.remove('validation-error', 'validation-ok');
+        errEl.classList.add('hidden');
+        return { ok: true, empty: true };
+    }
+    if (!regex.test(val)) {
+        el.classList.add('validation-error');
+        el.classList.remove('validation-ok');
+        errEl.textContent = `Formato inválido. Esperado: ${
+            id === 'ub1' ? 'Letra + dígito (ej: A1)' :
+            id === 'ub2' ? 'R-XX (ej: R-01)' : 'UNI-XXXXX (ej: UNI-00123)'
+        }`;
+        errEl.classList.remove('hidden');
+        return { ok: false };
+    }
+    el.classList.remove('validation-error');
+    el.classList.add('validation-ok');
+    errEl.classList.add('hidden');
+    return { ok: true };
+}
+
+['ub1', 'ub2', 'sku'].forEach(id => {
+    $(id).addEventListener('input', () => validateField(id, REGEX[id]));
+    $(id).addEventListener('blur', () => validateField(id, REGEX[id]));
+});
+
+/* ---------- Alta ---------- */
+$('formAlta').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const v1 = validateField('ub1', REGEX.ub1);
+    const v2 = validateField('ub2', REGEX.ub2);
+    const v3 = validateField('sku', REGEX.sku);
+
+    const ub1 = $('ub1').value.trim().toUpperCase();
+    const ub2 = $('ub2').value.trim().toUpperCase();
+    const sku = $('sku').value.trim().toUpperCase();
+    const estado = $('estado').value;
+    const cantidad = parseInt($('cantidad').value) || 0;
+
+    // Reglas de integridad mínima: al menos ub1 o ub2
+    if (!ub1 && !ub2) {
+        showMsg('Debes ingresar al menos Ubicación 1 o Ubicación 2.', 'red');
+        return;
+    }
+    if (!v1.ok || !v2.ok || !v3.ok) {
+        showMsg('Corrige los campos marcados en rojo antes de guardar.', 'red');
+        return;
+    }
+    // Validación de coherencia: si Ub2 es reserva y estado distinto a Reserva
+    if (ub2.startsWith('R-') && estado !== 'Reserva') {
+        showMsg('Ubicación 2 con formato de reserva (R-XX) requiere estado "Reserva".', 'red');
+        return;
+    }
+    if (cantidad < 0) { showMsg('La cantidad no puede ser negativa.', 'red'); return; }
+
+    // Evitar duplicado exacto de ubicación 1 + 2
+    const duplicado = inventario.some(r => r.ub1 === ub1 && r.ub2 === ub2 && ub1 && ub2);
+    if (duplicado) {
+        showMsg('Ya existe una ubicación con esa combinación (Ub1 + Ub2).', 'red');
+        return;
+    }
+
+    inventario.push({ id: uid(), ub1, ub2, sku, estado, cantidad });
+    saveState();
+    render();
+
+    // Limpiar
+    ['ub1', 'ub2', 'sku'].forEach(id => {
+        $(id).value = '';
+        $(id).classList.remove('validation-ok', 'validation-error');
+        $('err-' + id).classList.add('hidden');
+    });
+    $('cantidad').value = 0;
+    $('estado').value = 'Disponible';
+    showMsg('Ubicación registrada correctamente.', 'green');
+});
+
+function showMsg(text, color) {
+    const el = $('formMsg');
+    el.textContent = text;
+    el.className = 'md:col-span-12 text-sm ' + (color === 'red' ? 'text-red-600' : 'text-emerald-600');
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 3500);
+}
+
+/* ---------- Baja ---------- */
+function askDelete(id) {
+    const r = inventario.find(x => x.id === id);
+    if (!r) return;
+    // Validación de integridad previa: si está ocupada, advertir
+    deleteTargetId = id;
+    const ocupada = r.estado === 'Ocupada';
+    $('deleteMsg').innerHTML = `¿Dar de baja la ubicación <b>${r.ub1 || ''} ${r.ub2 || ''}</b>?` +
+        (ocupada ? '<br><span class="text-amber-600 text-xs">⚠ Esta ubicación está OCUPADA.</span>' : '');
+    $('deleteModal').classList.remove('hidden');
+    $('deleteModal').classList.add('flex');
+}
+function closeDeleteModal() {
+    $('deleteModal').classList.add('hidden');
+    $('deleteModal').classList.remove('flex');
+    deleteTargetId = null;
+}
+function confirmDelete() {
+    if (!deleteTargetId) return;
+    inventario = inventario.filter(x => x.id !== deleteTargetId);
+    saveState();
+    render();
+    closeDeleteModal();
+}
+function limpiarTodo() {
+    if (inventario.length === 0) return;
+    if (confirm('¿Vaciar por completo el inventario? Esta acción no se puede deshacer.')) {
+        inventario = [];
+        saveState();
+        render();
+    }
+}
+
+/* ---------- Exportación protegida ---------- */
+function openExportModal() {
+    if (inventario.length === 0) {
+        alert('No hay datos para exportar.');
+        return;
+    }
+    $('exportPass').value = '';
+    $('exportError').classList.add('hidden');
+    $('exportModal').classList.remove('hidden');
+    $('exportModal').classList.add('flex');
+    setTimeout(() => $('exportPass').focus(), 50);
+}
+function closeExportModal() {
+    $('exportModal').classList.add('hidden');
+    $('exportModal').classList.remove('flex');
+}
+function confirmExport() {
+    const pass = $('exportPass').value;
+    if (pass !== 'gafiojd') {  // Contraseña exacta requerida
+        $('exportError').classList.remove('hidden');
+        return;
+    }
+    closeExportModal();
+    exportToXLSX();
+}
+
+function exportToXLSX() {
+    const data = inventario.map(r => ({
+        'Ubicación 1': r.ub1,
+        'Ubicación 2': r.ub2,
+        'SKU': r.sku,
+        'Estado': r.estado,
+        'Cantidad': r.cantidad
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws['!cols'] = [{ wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 12 }, { wch: 10 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
+    const fecha = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `Universal_Inventario_${fecha}.xlsx`);
+}
+
+/* ---------- Filtros ---------- */
+$('filtroTexto').addEventListener('input', render);
+$('filtroEstado').addEventListener('change', render);
+
+/* ---------- Cierre modales con ESC ---------- */
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeExportModal(); closeDeleteModal(); }
+    if (e.key === 'Enter' && !$('exportModal').classList.contains('hidden')) confirmExport();
+});
+
+/* ---------- Init ---------- */
+loadState();
+render();
+</script>
+</body>
+</html>

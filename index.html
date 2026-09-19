@@ -1,7 +1,328 @@
-/* =========================================================
-   CONFIGURACIÓN — https://script.google.com/macros/s/AKfycbxJylrNy8sgV-70Slb_LI_CCm066ZZZs9cZzyNUZbudgeuNrCGtJtxlNCv9_wl2YgkE/exec
-   ========================================================= */
-const API_URL = 'PEGA_AQUI_TU_URL_DEL_WEB_APP';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Reservas · Universal Sept 2026</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{font-family:'Inter',sans-serif}
+  .fade-in{animation:fadeIn .2s ease-in-out}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+  .err{border-color:#ef4444!important;background:#fef2f2!important}
+  .ok{border-color:#22c55e!important;background:#f0fdf4!important}
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+  .ac-dropdown{position:absolute;z-index:60;left:0;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 10px 25px -5px rgba(0,0,0,.15);max-height:280px;overflow-y:auto;display:none}
+  .ac-dropdown.show{display:block}
+  .ac-item{padding:8px 12px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center;transition:background .1s}
+  .ac-item:hover,.ac-item.active{background:#eef2ff}
+  .ac-item .ac-code{font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#1e293b;font-size:12px}
+  .ac-item .ac-desc{font-size:11px;color:#64748b;flex:1;margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ac-item .ac-tag{font-size:10px;padding:2px 6px;border-radius:9999px;background:#f1f5f9;color:#475569;white-space:nowrap}
+  .ac-item .ac-tag.pat{background:#ede9fe;color:#5b21b6}
+  .ac-empty{padding:10px 12px;font-size:12px;color:#94a3b8;text-align:center}
+  .readonly-field{background:#f8fafc!important;color:#475569!important;cursor:not-allowed!important}
+</style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+<header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+    <div class="flex items-center gap-3">
+      <div class="bg-indigo-500 p-2 rounded-lg"><i class="fa-solid fa-warehouse"></i></div>
+      <div>
+        <h1 class="font-bold text-lg leading-tight">Gestión de Reservas</h1>
+        <p class="text-xs text-slate-400">Universal Sept 2026 · Base de datos compartida</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-slate-800 text-xs font-medium">
+        <i class="fa-solid fa-bookmark mr-1.5 text-purple-400"></i>
+        <span id="totalCount">0</span> reservas
+      </span>
+      <button onclick="cargarReservas()" class="bg-slate-700 hover:bg-slate-600 transition text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2" title="Refrescar">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+      <button onclick="openExportModal()" class="bg-emerald-600 hover:bg-emerald-500 transition text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+        <i class="fa-solid fa-file-export"></i> Exportar XLSX
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+
+  <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
+      <div class="flex items-center justify-between">
+        <div><p class="text-xs text-slate-500 font-medium uppercase">Reservas</p><p id="statTotal" class="text-2xl font-bold">0</p></div>
+        <div class="bg-indigo-100 text-indigo-600 p-2.5 rounded-lg"><i class="fa-solid fa-layer-group"></i></div>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
+      <div class="flex items-center justify-between">
+        <div><p class="text-xs text-slate-500 font-medium uppercase">Unidades</p><p id="statUnidades" class="text-2xl font-bold text-emerald-600">0</p></div>
+        <div class="bg-emerald-100 text-emerald-600 p-2.5 rounded-lg"><i class="fa-solid fa-cubes"></i></div>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
+      <div class="flex items-center justify-between">
+        <div><p class="text-xs text-slate-500 font-medium uppercase">Alternos únicos</p><p id="statSkus" class="text-2xl font-bold text-amber-600">0</p></div>
+        <div class="bg-amber-100 text-amber-600 p-2.5 rounded-lg"><i class="fa-solid fa-barcode"></i></div>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
+      <div class="flex items-center justify-between">
+        <div><p class="text-xs text-slate-500 font-medium uppercase">Catálogo maestro</p><p id="statCatalogo" class="text-2xl font-bold text-purple-600">0</p></div>
+        <div class="bg-purple-100 text-purple-600 p-2.5 rounded-lg"><i class="fa-solid fa-book"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
+    <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-plus-circle text-indigo-600"></i>
+        <h2 class="font-semibold">Alta de Reserva</h2>
+      </div>
+      <p class="text-xs text-slate-500">El Alterno debe existir en el catálogo maestro</p>
+    </div>
+    <form id="formAlta" class="p-5 grid grid-cols-1 md:grid-cols-12 gap-4" novalidate autocomplete="off">
+      <div class="md:col-span-6 relative">
+        <label class="block text-xs font-medium text-slate-600 mb-1">Ubicación de reserva <span class="text-purple-500">*</span></label>
+        <input type="text" id="ubReserva" autocomplete="off" maxlength="12"
+          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
+          placeholder="Escribe ej: C24T4">
+        <p id="err-ubReserva" class="text-xs text-red-600 mt-1 hidden"></p>
+      </div>
+      <div class="md:col-span-6 relative">
+        <label class="block text-xs font-medium text-slate-600 mb-1">Alterno <span class="text-purple-500">*</span> <span class="text-slate-400 text-xs font-normal">(debe existir en catálogo)</span></label>
+        <input type="text" id="alterno" autocomplete="off" maxlength="30"
+          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
+          placeholder="Escribe ej: 208139 · 00037_1 · 00375-79760">
+        <div id="ac-alterno" class="ac-dropdown"></div>
+        <p id="err-alterno" class="text-xs text-red-600 mt-1 hidden"></p>
+      </div>
+
+      <div class="md:col-span-3">
+        <label class="block text-xs font-medium text-slate-600 mb-1">Corto <span class="text-slate-400 text-xs">(auto)</span></label>
+        <input type="text" id="corto" readonly tabindex="-1" class="readonly-field w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none uppercase" placeholder="—">
+      </div>
+      <div class="md:col-span-3">
+        <label class="block text-xs font-medium text-slate-600 mb-1">Clave <span class="text-slate-400 text-xs">(auto)</span></label>
+        <input type="text" id="clave" readonly tabindex="-1" class="readonly-field w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none uppercase" placeholder="—">
+      </div>
+      <div class="md:col-span-4">
+        <label class="block text-xs font-medium text-slate-600 mb-1">Artículo <span class="text-slate-400 text-xs">(auto)</span></label>
+        <input type="text" id="articulo" readonly tabindex="-1" class="readonly-field w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none" placeholder="—">
+      </div>
+      <div class="md:col-span-2">
+        <label class="block text-xs font-medium text-slate-600 mb-1">Cant.</label>
+        <input type="number" id="cantidad" min="0" value="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+      </div>
+
+      <div class="md:col-span-12 flex flex-col sm:flex-row gap-2 items-stretch">
+        <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
+          <i class="fa-solid fa-floppy-disk"></i> Guardar reserva
+        </button>
+        <button type="reset" class="sm:w-32 border border-slate-300 text-slate-600 hover:bg-slate-50 py-2 rounded-lg text-sm font-medium transition">
+          <i class="fa-solid fa-eraser mr-1"></i>Limpiar
+        </button>
+      </div>
+      <p id="formMsg" class="md:col-span-12 text-sm hidden"></p>
+    </form>
+  </section>
+
+  <section class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-xs text-blue-900">
+    <p class="font-semibold mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Reglas de validación:</p>
+    <ul class="grid md:grid-cols-2 gap-2 list-disc list-inside">
+      <li><b>Ubicación:</b> Escribe sin espacio (ej: <code>C24T4</code>) y al guardar se normaliza a <code>C 24T4</code>.</li>
+      <li><b>Alterno:</b> Debe existir en el catálogo. Al elegirlo se autocompletan <b>Corto</b>, <b>Clave</b> y <b>Artículo</b>.</li>
+    </ul>
+  </section>
+
+  <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-list-check text-indigo-600"></i>
+        <h2 class="font-semibold">Reservas registradas</h2>
+        <span id="loadingIndicator" class="text-xs text-slate-400 hidden"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Cargando...</span>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" id="filtroTexto" placeholder="Buscar..." class="pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-52">
+        </div>
+        <button onclick="limpiarTodo()" class="text-xs text-red-600 hover:text-red-700 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg transition">
+          <i class="fa-solid fa-trash-can mr-1"></i>Vaciar
+        </button>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+          <tr>
+            <th class="px-3 py-3 text-left font-medium">Ubicación</th>
+            <th class="px-3 py-3 text-left font-medium">Corto</th>
+            <th class="px-3 py-3 text-left font-medium">Clave</th>
+            <th class="px-3 py-3 text-left font-medium">Alterno</th>
+            <th class="px-3 py-3 text-left font-medium">Artículo</th>
+            <th class="px-3 py-3 text-right font-medium">Cant.</th>
+            <th class="px-3 py-3 text-center font-medium">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody" class="divide-y divide-slate-100"></tbody>
+      </table>
+    </div>
+    <div id="emptyState" class="py-12 text-center text-slate-400">
+      <i class="fa-solid fa-inbox text-4xl mb-3 text-slate-300"></i>
+      <p class="text-sm">No hay reservas registradas.</p>
+      <p class="text-xs mt-1">Completa el formulario superior para comenzar.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-slate-400">
+  Sistema de reservas · Datos compartidos vía Google Sheets
+</footer>
+
+<div id="exportModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 fade-in">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="bg-emerald-100 text-emerald-600 p-2.5 rounded-lg"><i class="fa-solid fa-lock"></i></div>
+      <div><h3 class="font-semibold">Exportación protegida</h3><p class="text-xs text-slate-500">Ingresa la contraseña para continuar</p></div>
+    </div>
+    <input type="password" id="exportPass" placeholder="Contraseña" autocomplete="off"
+      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none mb-2">
+    <p id="exportError" class="text-xs text-red-600 mb-2 hidden">Contraseña incorrecta.</p>
+    <div class="flex gap-2 mt-3">
+      <button onclick="closeExportModal()" class="flex-1 border border-slate-300 text-slate-600 hover:bg-slate-50 py-2 rounded-lg text-sm font-medium">Cancelar</button>
+      <button onclick="confirmExport()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg text-sm font-medium">Exportar</button>
+    </div>
+  </div>
+</div>
+
+<div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 fade-in">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="bg-red-100 text-red-600 p-2.5 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div><h3 class="font-semibold">Confirmar baja</h3><p class="text-xs text-slate-500">Esta acción no se puede deshacer</p></div>
+    </div>
+    <p id="deleteMsg" class="text-sm text-slate-600 mb-4">¿Eliminar esta reserva?</p>
+    <div class="flex gap-2">
+      <button onclick="closeDeleteModal()" class="flex-1 border border-slate-300 text-slate-600 hover:bg-slate-50 py-2 rounded-lg text-sm font-medium">Cancelar</button>
+      <button onclick="confirmDelete()" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg text-sm font-medium">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script id="catalogoMaestro" type="application/json">
+[
+  {"c":"208139","k":"00001","a":"00001","d":"Exhibidor d/lijas 00001 fandeli"},
+  {"c":"7665","k":"0150005","a":"000010101","d":"Accesorios blanco Jazmin Cato"},
+  {"c":"7668","k":"0150008","a":"000010501","d":"Accesorios marfil Jazmin Cato"},
+  {"c":"7663","k":"0150003","a":"000010701","d":"Accesorios azul holanda Jazmin Cato"},
+  {"c":"7667","k":"0150007","a":"000011101","d":"Accesorios gris platino Jazmin Cato"},
+  {"c":"7664","k":"0150004","a":"000011801","d":"Accesorios beige Jazmin Cato"},
+  {"c":"16287","k":"000102","a":"000102","d":"Accesorios verde ecologico Jazmin Cato"},
+  {"c":"167","k":"0150011","a":"0001121","d":"Accesorios verde jade Jazmin Cato"},
+  {"c":"234399","k":"00037_1","a":"00037_1","d":"Lija negra agua a 99 220 9x11 c/50pz Fandeli"},
+  {"c":"234400","k":"00038_1","a":"00038_1","d":"Lija negra agua a 99 240 9x11 c/50pz Fandeli"},
+  {"c":"4119","k":"1300051","a":"00039","d":"Lija negra agua a 99 280 9x11 fandeli"},
+  {"c":"234401","k":"00040_1","a":"00040_1","d":"Lija negra agua a 99 320 9x11 c/50pz Fandeli"},
+  {"c":"4121","k":"1300050","a":"00041","d":"Lija negra agua a 99 360 9x11 fandeli"},
+  {"c":"234402","k":"00042_1","a":"00042_1","d":"Lija negra agua a 99 400 9x11 c/50pz Fandeli"},
+  {"c":"191094","k":"43","a":"00043","d":"Lija negra agua a 99 500 9x11 fandeli"},
+  {"c":"234403","k":"00044_1","a":"00044_1","d":"Lija negra agua a 99 600 9x11 c/50pz Fandeli"},
+  {"c":"234404","k":"00046_1","a":"00046_1","d":"Lija cafe p/madera c081 100 9x11 c/50pz Fandeli"},
+  {"c":"234405","k":"00047_1","a":"00047_1","d":"Lija cafe p/madera c081 120 9x11 c/50pz Fandeli"},
+  {"c":"234406","k":"00048_1","a":"00048_1","d":"Lija negra agua b 99 1200 9x11 c/25pz Fandeli"},
+  {"c":"234407","k":"00049_1","a":"00049_1","d":"Lija negra agua b 99 1500 9x11 c/25pz Fandeli"},
+  {"c":"234408","k":"00051_1","a":"00051_1","d":"Lija negra agua c 99 80 9x11 c/50pz Fandeli"},
+  {"c":"234409","k":"00052_1","a":"00052_1","d":"Lija negra agua c 99 100 9x11 c/50pz Fandeli"},
+  {"c":"234410","k":"00053_1","a":"00053_1","d":"Lija negra agua c 99 120 9x11 c/50pz Fandeli"},
+  {"c":"234411","k":"00054_1","a":"00054_1","d":"Lija negra agua c 99 150 9x11 c/50pz Fandeli"},
+  {"c":"234412","k":"00055_1","a":"00055_1","d":"Lija negra agua c 99 180 9x11 c/50pz Fandeli"},
+  {"c":"234413","k":"00058_1","a":"00058_1","d":"Lija cafe p/madera d081 050 9x11 c/25pz Fandeli"},
+  {"c":"234414","k":"00059_1","a":"00059_1","d":"Lija cafe p/madera d081 060 9x11 c/25pz Fandeli"},
+  {"c":"234415","k":"00060_1","a":"00060_1","d":"Lija cafe p/madera d081 080 9x11 c/50pz Fandeli"},
+  {"c":"4142","k":"1300013","a":"00073","d":"Lija roja oxialum j 86 080 9x11 metal/madera fandeli"},
+  {"c":"12529","k":"1300069","a":"00074","d":"Lija roja oxialum j 86 100 9x11 metal/madera fandeli"},
+  {"c":"4141","k":"1300014","a":"00075","d":"Lija roja oxialum j 86 120 9x11 metal/madera fandeli"},
+  {"c":"201901","k":"00076","a":"00076","d":"Lija roja oxialum j 86 150 9x11 metal/madera fandeli"},
+  {"c":"201902","k":"00077","a":"00077","d":"Lija roja oxialum j 86 180 9x11 metal/madera fandeli"},
+  {"c":"198747","k":"00078","a":"00078","d":"Lija roja oxialum j 86 220 9x11 metal/madera fandeli"},
+  {"c":"279708","k":"00079","a":"00079","d":"Lija roja oxialum j 86 240 9x11 metal/madera Fandeli"},
+  {"c":"238138","k":"00080","a":"00080","d":"Lija roja oxialum j 86 280 9x11 metal/madera Fandeli"},
+  {"c":"207183","k":"00081","a":"00081","d":"Lija roja oxialum j 86 320 9x11 metal/madera fandeli"},
+  {"c":"234423","k":"00084_1","a":"00084_1","d":"Lija naranja econ p/madera k 61 fino 9x11 c/50pz Fandeli"},
+  {"c":"234424","k":"00085_1","a":"00085_1","d":"Lija naranja econ p/madera k 61 grueso 9x11 c/25pz Fandeli"},
+  {"c":"234425","k":"00086_1","a":"00086_1","d":"Lija naranja econ p/madera k 61 mediano 9x11 c/50pz Fandeli"},
+  {"c":"4143","k":"1300012","a":"00089","d":"Lija roja oxialum x 86 36 9x11 metal/madera fandeli"},
+  {"c":"191092","k":"90","a":"00090","d":"Lija roja oxialum x 86 40 9x11 p/tela fandeli"},
+  {"c":"191093","k":"91","a":"00091","d":"Lija roja oxialum x 86 50 9x11 p/tela fandeli"},
+  {"c":"4144","k":"1300057","a":"00092","d":"Lija roja oxialum x 86 60 9x11 metal/madera fandeli"},
+  {"c":"192248","k":"00191","a":"00191","d":"Banda de lija x 86 100 4x24 fandeli"},
+  {"c":"288292","k":"001E","a":"001E","d":"Carton c/30 kits reparacion cuello ganso freg a.fria Hulcen"},
+  {"c":"4011","k":"00375-79760","a":"00375-79760","d":"Disco lija g 88 41/2 36 fandeli"},
+  {"c":"213488","k":"00388-79770","a":"00388-79770","d":"Disco lija g 88 5 060 fandeli"},
+  {"c":"213489","k":"00389-79771","a":"00389-79771","d":"Disco lija g 88 5 080 fandeli"},
+  {"c":"213490","k":"00390-79772","a":"00390-79772","d":"Disco lija g 88 5 100 fandeli"},
+  {"c":"213491","k":"00391-79773","a":"00391-79773","d":"Disco lija g 88 5 120 fandeli"},
+  {"c":"288294","k":"005E","a":"005E","d":"Carton c/30 kits reparacion cartucho lav a.fria Hulcen"},
+  {"c":"280790","k":"006","a":"006","d":"Cuchara p/albañil p/detallar # 06 Celta"},
+  {"c":"288293","k":"006E","a":"006E","d":"Carton c/30 kits reparacion llave nariz a.fria Hulcen"},
+  {"c":"280795","k":"006L","a":"006L","d":"Cuchara p/albañil t/filadelfia # 06 m/mad 006L Lince Celta"},
+  {"c":"191100","k":"00731-79755","a":"00731-79755","d":"Disco lija g 88 4 5/8 80 fandeli"},
+  {"c":"214409","k":"00778","a":"00778","d":"Lija negra agua c 99 60 9x11 fandeli"},
+  {"c":"234428","k":"00780_1","a":"00780_1","d":"Lija cafe p/madera c081 150 9x11 c/50pz Fandeli"},
+  {"c":"288295","k":"007E","a":"007E","d":"Carton c/30 kits reparacion cartucho reg a.fria Hulcen"},
+  {"c":"4014","k":"00881-79775","a":"00881-79775","d":"Disco lija g 88 7 24 fandeli"},
+  {"c":"4015","k":"00882-79776","a":"00882-79776","d":"Disco lija g 88 7 36 fandeli"},
+  {"c":"196886","k":"00883-79777","a":"00883-79777","d":"Disco lija g 88 7 50 fandeli"},
+  {"c":"4016","k":"00885-79779","a":"00885-79779","d":"Disco lija g 88 7 80 fandeli"},
+  {"c":"196888","k":"00886-79780","a":"00886-79780","d":"Disco lija g 88 7 100 fandeli"},
+  {"c":"4013","k":"00887-79781","a":"00887-79781","d":"Disco lija g 88 7 120 fandeli"},
+  {"c":"280796","k":"009","a":"009","d":"Cuchara p/albañil t/filadelfia # 09 Celta"},
+  {"c":"197644","k":"00999-79768","a":"00999-79768","d":"Disco lija g 88 5 36 fandeli"},
+  {"c":"280797","k":"009L","a":"009L","d":"Cuchara p/albañil t/filadelfia # 09 m/mad 009L Lince Celta"},
+  {"c":"280791","k":"010","a":"010","d":"Cuchara p/albañil t/filadelfia # 10 Celta"},
+  {"c":"7681","k":"0100017","a":"0100017","d":"Asiento para sanitario alargado blanco Beta"},
+  {"c":"7680","k":"0100021","a":"0100021","d":"Asiento para sanitario alargado beige Beta"},
+  {"c":"7846","k":"0150118","a":"010010321","d":"Taza redonda rosa Jazmin Cato"},
+  {"c":"12543","k":"0150252","a":"010010521","d":"Taza redonda marfil 3.8lts Jazmin Cato"},
+  {"c":"7840","k":"0150111","a":"010010721","d":"Taza redonda azul holanda Jazmin Cato"},
+  {"c":"7844","k":"0150115","a":"010011121","d":"Taza redonda gris platino Jazmin Cato"},
+  {"c":"7841","k":"0150112","a":"010011821","d":"Taza redonda beige Jazmin Cato"},
+  {"c":"194785","k":"SC224","a":"010160111","d":"Taza redonda blanca 4.8lts Aguazul Cato"},
+  {"c":"194786","k":"SC225","a":"010160511","d":"Taza redonda marfil 4.8lts Aguazul Cato"},
+  {"c":"238215","k":"0102/N","a":"0102","d":"Termo 01gal/3.8lt mod. Explorer varios colores NYC"},
+  {"c":"288932","k":"CXMAN0912","a":"01040","d":"Cubierta p/mtto proteccion contra derrames 1ton Cluxer"},
+  {"c":"288933","k":"CXMAN1824","a":"01041","d":"Cubierta p/mtto proteccion contra derrames 1.5 a 2ton Cluxer"},
+  {"c":"280792","k":"010L","a":"010L","d":"Cuchara p/albañil t/filadelfia # 10 m/mad 010L Lince Celta"},
+  {"c":"280793","k":"011_1","a":"011_1","d":"Cuchara p/albañil t/filadelfia # 11 Celta"},
+  {"c":"280794","k":"011L","a":"011L","d":"Cuchara p/albañil t/filadelfia # 11 m/mad 011L Lince Celta"}
+]
+</script>
+
+<script>
+/* =====================================================================
+   =====================================================================
+   ⬇️⬇️⬇️  PEGA AQUÍ TU LINK DE APPS SCRIPT  ⬇️⬇️⬇️
+   ---------------------------------------------------------------------
+   Reemplaza SOLO el texto entre las comillas simples.
+   Debe quedar así (ejemplo):
+   const API_URL = 'https://script.google.com/macros/s/XXXXX/exec';
+   =====================================================================
+   ===================================================================== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbxJylrNy8sgV-70Slb_LI_CCm066ZZZs9cZzyNUZbudgeuNrCGtJtxlNCv9_wl2YgkE/exec';
+/* =====================================================================
+   ⬆️⬆️⬆️  FIN DEL LINK DE APPS SCRIPT  ⬆️⬆️⬆️
+   ===================================================================== */
 
 /* =========================================================
    ESTADO
@@ -11,7 +332,7 @@ let RESERVAS = [];
 let deleteTargetRow = null;
 
 /* =========================================================
-   CARGA DEL CATÁLOGO (embebido, no cambia)
+   CARGA DEL CATÁLOGO
    ========================================================= */
 function cargarCatalogo() {
   try {
@@ -25,14 +346,12 @@ function cargarCatalogo() {
 }
 
 /* =========================================================
-   NORMALIZAR UBICACIÓN (C24T4 → C 24T4)
+   NORMALIZAR UBICACIÓN
    ========================================================= */
 function normalizarUbicacion(v) {
   const raw = v.trim().toUpperCase().replace(/\s+/g, '');
   const match = raw.match(/^([A-Z]{1,3})(\d{2})(.+)$/);
-  if (match) {
-    return `${match[1]} ${match[2]}${match[3]}`;
-  }
+  if (match) return `${match[1]} ${match[2]}${match[3]}`;
   return raw;
 }
 
@@ -42,15 +361,17 @@ function validarUbicacion(v) {
 }
 
 /* =========================================================
-   API: CARGAR RESERVAS DESDE GOOGLE SHEETS
+   API: CARGAR RESERVAS
    ========================================================= */
 async function cargarReservas() {
+  const loading = document.getElementById('loadingIndicator');
+  if (loading) loading.classList.remove('hidden');
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
     if (Array.isArray(data)) {
       RESERVAS = data.map((r, idx) => ({
-        _row: idx + 2, // fila real en el sheet (1 = header)
+        _row: idx + 2,
         ub: r.ubicacion || '',
         corto: r.corto || '',
         clave: r.clave || '',
@@ -64,11 +385,13 @@ async function cargarReservas() {
     actualizarStats();
   } catch (e) {
     console.error('Error cargando reservas:', e);
+  } finally {
+    if (loading) loading.classList.add('hidden');
   }
 }
 
 /* =========================================================
-   API: GUARDAR RESERVA
+   API: GUARDAR
    ========================================================= */
 async function guardarReservaEnSheet(reserva) {
   const payload = {
@@ -79,22 +402,18 @@ async function guardarReservaEnSheet(reserva) {
     articulo: reserva.articulo,
     cantidad: reserva.cantidad
   };
-  
   const res = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify(payload)
   });
-  
   const data = await res.json();
-  if (data.result !== 'success') {
-    throw new Error(data.message || 'Error al guardar');
-  }
+  if (data.result !== 'success') throw new Error(data.message || 'Error al guardar');
   return data;
 }
 
 /* =========================================================
-   API: ELIMINAR RESERVA
+   API: ELIMINAR
    ========================================================= */
 async function eliminarReservaEnSheet(row) {
   const res = await fetch(API_URL, {
@@ -103,21 +422,17 @@ async function eliminarReservaEnSheet(row) {
     body: JSON.stringify({ action: 'delete', row: row })
   });
   const data = await res.json();
-  if (data.result !== 'deleted') {
-    throw new Error(data.message || 'Error al eliminar');
-  }
+  if (data.result !== 'deleted') throw new Error(data.message || 'Error al eliminar');
 }
 
 /* =========================================================
-   AUTOCOMPLETADO (igual que antes)
+   AUTOCOMPLETADO
    ========================================================= */
 function buscarEnCatalogo(termino) {
   const t = termino.trim().toUpperCase();
   if (!t) return [];
   return CATALOGO.filter(x =>
-    x.a.toUpperCase() === t ||
-    x.k.toUpperCase() === t ||
-    x.c.toUpperCase() === t
+    x.a.toUpperCase() === t || x.k.toUpperCase() === t || x.c.toUpperCase() === t
   );
 }
 
@@ -139,19 +454,11 @@ function setupAutocompleteAlterno() {
   input.addEventListener('input', () => {
     const v = input.value.trim().toUpperCase();
     input.value = v;
-
-    if (!v) {
-      limpiarCamposAuto();
-      dropdown.classList.remove('show');
-      return;
-    }
+    if (!v) { limpiarCamposAuto(); dropdown.classList.remove('show'); return; }
 
     const exacto = buscarEnCatalogo(v);
-    if (exacto.length === 1) {
-      autofillCamposAuto(exacto[0]);
-    } else {
-      limpiarCamposAuto();
-    }
+    if (exacto.length === 1) autofillCamposAuto(exacto[0]);
+    else limpiarCamposAuto();
 
     const matches = buscarParcial(v);
     if (!matches.length) {
@@ -201,7 +508,7 @@ function limpiarCamposAuto() {
 }
 
 /* =========================================================
-   GUARDAR (submit del form)
+   GUARDAR
    ========================================================= */
 document.getElementById('formAlta').addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -209,8 +516,6 @@ document.getElementById('formAlta').addEventListener('submit', async function(e)
   const ubRaw = document.getElementById('ubReserva').value.trim().toUpperCase();
   const alterno = document.getElementById('alterno').value.trim().toUpperCase();
   const cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
-
-  // Normalizar ubicación: C24T4 → C 24T4
   const ub = normalizarUbicacion(ubRaw);
 
   if (!validarUbicacion(ub)) {
@@ -241,7 +546,7 @@ document.getElementById('formAlta').addEventListener('submit', async function(e)
     limpiarCamposAuto();
     document.getElementById('ubReserva').classList.remove('ok','err');
     document.getElementById('alterno').classList.remove('ok','err');
-    await cargarReservas(); // recargar desde el Sheet
+    await cargarReservas();
   } catch (err) {
     mostrarMsg('Error al guardar: ' + err.message, 'error');
   }
@@ -256,7 +561,7 @@ function mostrarMsg(texto, tipo) {
 }
 
 /* =========================================================
-   RENDER TABLA
+   RENDER
    ========================================================= */
 function renderTabla() {
   const tbody = document.getElementById('tbody');
@@ -303,9 +608,6 @@ function renderTabla() {
 
 document.getElementById('filtroTexto').addEventListener('input', renderTabla);
 
-/* =========================================================
-   STATS
-   ========================================================= */
 function actualizarStats() {
   document.getElementById('statTotal').textContent = RESERVAS.length;
   const unidades = RESERVAS.reduce((s,r) => s + (r.cantidad||0), 0);
@@ -342,9 +644,6 @@ async function confirmDelete() {
   }
 }
 
-/* =========================================================
-   VACIAR (elimina todas las filas del Sheet)
-   ========================================================= */
 async function limpiarTodo() {
   if (!RESERVAS.length) return;
   if (!confirm('¿Vaciar TODAS las reservas? Esto borrará el Sheet.')) return;
@@ -355,7 +654,7 @@ async function limpiarTodo() {
 }
 
 /* =========================================================
-   EXPORTAR (desde datos locales en memoria)
+   EXPORTAR
    ========================================================= */
 const EXPORT_PASS = 'admin2026';
 
@@ -417,3 +716,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupAutocompleteAlterno();
   await cargarReservas();
 });
+</script>
+
+</body>
+</html>

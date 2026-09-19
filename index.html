@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestión de Inventario · Universal Sept 2026</title>
+<title>Gestión de Reservas · Universal Sept 2026</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -26,14 +26,14 @@
     <div class="flex items-center gap-3">
       <div class="bg-indigo-500 p-2 rounded-lg"><i class="fa-solid fa-warehouse"></i></div>
       <div>
-        <h1 class="font-bold text-lg leading-tight">Inventario Universal</h1>
-        <p class="text-xs text-slate-400">Sept 2026 · Validación predictiva activa</p>
+        <h1 class="font-bold text-lg leading-tight">Gestión de Reservas</h1>
+        <p class="text-xs text-slate-400">Universal Sept 2026 · Validación predictiva activa</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
       <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-slate-800 text-xs font-medium">
-        <i class="fa-solid fa-boxes-stacked mr-1.5 text-indigo-400"></i>
-        <span id="totalCount">0</span> ubicaciones
+        <i class="fa-solid fa-bookmark mr-1.5 text-purple-400"></i>
+        <span id="totalCount">0</span> reservas
       </span>
       <button onclick="openExportModal()" class="bg-emerald-600 hover:bg-emerald-500 transition text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
         <i class="fa-solid fa-file-export"></i> Exportar XLSX
@@ -77,48 +77,43 @@
     <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
       <div class="flex items-center gap-2">
         <i class="fa-solid fa-plus-circle text-indigo-600"></i>
-        <h2 class="font-semibold">Alta de Ubicación</h2>
+        <h2 class="font-semibold">Alta de Reserva</h2>
       </div>
       <p class="text-xs text-slate-500">Reglas extraídas del Excel Universal_Septiembre_2026</p>
     </div>
     <form id="formAlta" class="p-5 grid grid-cols-1 md:grid-cols-12 gap-4" novalidate>
-      <div class="md:col-span-3">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Ubicación 1 <span class="text-slate-400">(pasillo/anaquel)</span></label>
-        <input type="text" id="ub1" list="listUb1" autocomplete="off" maxlength="10"
+      <div class="md:col-span-4">
+        <label class="block text-xs font-medium text-slate-600 mb-1">
+          Ubicación de reserva <span class="text-purple-500">*</span>
+        </label>
+        <input type="text" id="ubReserva" list="listUbReserva" autocomplete="off" maxlength="12"
           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
-          placeholder="Ej: T 0704 · DR6101 · C 57T1">
-        <p id="err-ub1" class="text-xs text-red-600 mt-1 hidden"></p>
+          placeholder="Ej: C 57T1 · C 58T1 · M 12R1 · E 37R5">
+        <p id="err-ubReserva" class="text-xs text-red-600 mt-1 hidden"></p>
       </div>
-      <div class="md:col-span-3">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Ubicación 2 <span class="text-purple-500">(reserva)</span></label>
-        <input type="text" id="ub2" list="listUb2" autocomplete="off" maxlength="10"
-          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
-          placeholder="Ej: C 57T1 · C 58T1 · M 12R1">
-        <p id="err-ub2" class="text-xs text-red-600 mt-1 hidden"></p>
-      </div>
-      <div class="md:col-span-3">
+      <div class="md:col-span-4">
         <label class="block text-xs font-medium text-slate-600 mb-1">SKU / Clave</label>
         <input type="text" id="sku" list="listSku" autocomplete="off" maxlength="30"
           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
-          placeholder="Ej: 208139 · 00037_1 · UNI-00123">
+          placeholder="Ej: 208139 · 00037_1 · 00375-79760">
         <p id="err-sku" class="text-xs text-red-600 mt-1 hidden"></p>
       </div>
       <div class="md:col-span-2">
         <label class="block text-xs font-medium text-slate-600 mb-1">Estado</label>
         <select id="estado" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          <option value="Reserva">Reserva</option>
           <option value="Disponible">Disponible</option>
           <option value="Ocupada">Ocupada</option>
-          <option value="Reserva">Reserva</option>
         </select>
       </div>
-      <div class="md:col-span-1">
+      <div class="md:col-span-2">
         <label class="block text-xs font-medium text-slate-600 mb-1">Cant.</label>
         <input type="number" id="cantidad" min="0" value="0"
           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
       </div>
       <div class="md:col-span-12 flex flex-col sm:flex-row gap-2 items-stretch">
         <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
-          <i class="fa-solid fa-floppy-disk"></i> Guardar ubicación
+          <i class="fa-solid fa-floppy-disk"></i> Guardar reserva
         </button>
         <button type="reset" class="sm:w-32 border border-slate-300 text-slate-600 hover:bg-slate-50 py-2 rounded-lg text-sm font-medium transition">
           <i class="fa-solid fa-eraser mr-1"></i>Limpiar
@@ -126,8 +121,7 @@
       </div>
       <p id="formMsg" class="md:col-span-12 text-sm hidden"></p>
 
-      <datalist id="listUb1"></datalist>
-      <datalist id="listUb2"></datalist>
+      <datalist id="listUbReserva"></datalist>
       <datalist id="listSku"></datalist>
     </form>
   </section>
@@ -135,10 +129,9 @@
   <!-- LEYENDA REGLAS -->
   <section class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-xs text-blue-900">
     <p class="font-semibold mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Reglas de validación activas (basadas en el Excel):</p>
-    <ul class="grid md:grid-cols-3 gap-2 list-disc list-inside">
-      <li><b>Ubicación 1:</b> Letra(s) + número + código (ej: <code>T 0704</code>, <code>DR6101</code>, <code>C 57T1</code>)</li>
-      <li><b>Ubicación 2:</b> Formato reserva (ej: <code>C 57T1</code>, <code>M 12R1</code>, <code>E 37R5</code>)</li>
-      <li><b>SKU:</b> Alfanumérico con <code>_ - . /</code> y sufijo <code>PROMO</code> (ej: <code>00037_1</code>, <code>00375-79760</code>)</li>
+    <ul class="grid md:grid-cols-2 gap-2 list-disc list-inside">
+      <li><b>Ubicación de reserva:</b> Letra(s) + espacio + 2 dígitos + código (ej: <code>C 57T1</code>, <code>M 12R1</code>, <code>E 37R5</code>, <code>DR38T2</code>)</li>
+      <li><b>SKU:</b> Alfanumérico con <code>_ - . /</code> y sufijo opcional <code>PROMO</code> (ej: <code>00037_1</code>, <code>00375-79760</code>)</li>
     </ul>
   </section>
 
@@ -147,7 +140,7 @@
     <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2">
         <i class="fa-solid fa-list-check text-indigo-600"></i>
-        <h2 class="font-semibold">Ubicaciones registradas</h2>
+        <h2 class="font-semibold">Reservas registradas</h2>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <div class="relative">
@@ -156,9 +149,9 @@
         </div>
         <select id="filtroEstado" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
           <option value="">Todos</option>
+          <option value="Reserva">Reserva</option>
           <option value="Disponible">Disponible</option>
           <option value="Ocupada">Ocupada</option>
-          <option value="Reserva">Reserva</option>
         </select>
         <button onclick="limpiarTodo()" class="text-xs text-red-600 hover:text-red-700 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg transition">
           <i class="fa-solid fa-trash-can mr-1"></i>Vaciar
@@ -169,8 +162,7 @@
       <table class="w-full text-sm">
         <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
           <tr>
-            <th class="px-4 py-3 text-left font-medium">Ubicación 1</th>
-            <th class="px-4 py-3 text-left font-medium">Ubicación 2</th>
+            <th class="px-4 py-3 text-left font-medium">Ubicación de reserva</th>
             <th class="px-4 py-3 text-left font-medium">SKU</th>
             <th class="px-4 py-3 text-left font-medium">Estado</th>
             <th class="px-4 py-3 text-right font-medium">Cantidad</th>
@@ -182,14 +174,14 @@
     </div>
     <div id="emptyState" class="py-12 text-center text-slate-400">
       <i class="fa-solid fa-inbox text-4xl mb-3 text-slate-300"></i>
-      <p class="text-sm">No hay ubicaciones registradas.</p>
+      <p class="text-sm">No hay reservas registradas.</p>
       <p class="text-xs mt-1">Completa el formulario superior para comenzar.</p>
     </div>
   </section>
 </main>
 
 <footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-slate-400">
-  Sistema de inventario · Patrones validados contra Universal_Septiembre_2026.xlsx
+  Sistema de reservas · Patrones validados contra Universal_Septiembre_2026.xlsx
 </footer>
 
 <!-- MODAL EXPORT -->
@@ -216,7 +208,7 @@
       <div class="bg-red-100 text-red-600 p-2.5 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
       <div><h3 class="font-semibold">Confirmar baja</h3><p class="text-xs text-slate-500">Esta acción no se puede deshacer</p></div>
     </div>
-    <p id="deleteMsg" class="text-sm text-slate-600 mb-4">¿Eliminar esta ubicación?</p>
+    <p id="deleteMsg" class="text-sm text-slate-600 mb-4">¿Eliminar esta reserva?</p>
     <div class="flex gap-2">
       <button onclick="closeDeleteModal()" class="flex-1 border border-slate-300 text-slate-600 hover:bg-slate-50 py-2 rounded-lg text-sm font-medium">Cancelar</button>
       <button onclick="confirmDelete()" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg text-sm font-medium">Eliminar</button>
@@ -228,12 +220,7 @@
 /* =========================================================
    REGLAS DE VALIDACIÓN EXTRAÍDAS DEL EXCEL UNIVERSAL_SEPT_2026
    ---------------------------------------------------------
-   Ubicación 1 (pasillo/anaquel):
-     - 1-2 letras + espacio opcional + 2-5 caracteres alfanum
-     - Ejemplos reales: T 0704 · DR6101 · RR0101 · C 57T1 · A A203
-     - Regex: ^[A-Z]{1,2}\s?[A-Z0-9]{2,5}$
-
-   Ubicación 2 (zona de reservas):
+   Ubicación de reserva:
      - Letra(s) + espacio + 2 dígitos + opcional letra + dígito
      - Ejemplos reales: C 57T1 · C 58T1 · DR38T2 · M 12R1 · E 37R5
      - Regex: ^[A-Z]{1,3}\s?\d{2}[A-Z]?\d*$
@@ -241,18 +228,16 @@
    SKU / Clave:
      - Alfanumérico, admite _ - . / y sufijo PROMO
      - Ejemplos reales: 208139 · 00037_1 · 00375-79760 · 101502104 PROMO
-     - Regex: ^[A-Z0-9][A-Z0-9_\-\.\/ ]{2,25}( PROMO)?$
+     - Regex: ^[A-Z0-9][A-Z0-9_\-\.\/ ]{2,25}(\sPROMO)?$
    ========================================================= */
 const REGEX = {
-  ub1: /^[A-Z]{1,2}\s?[A-Z0-9]{2,5}$/,
-  ub2: /^[A-Z]{1,3}\s?\d{2}[A-Z]?\d*$/,
-  sku: /^[A-Z0-9][A-Z0-9_\-\.\/ ]{2,25}(\sPROMO)?$/
+  ubReserva: /^[A-Z]{1,3}\s?\d{2}[A-Z]?\d*$/,
+  sku:       /^[A-Z0-9][A-Z0-9_\-\.\/ ]{2,25}(\sPROMO)?$/
 };
 
 const HINTS = {
-  ub1: 'Letra(s)+número (ej: T 0704, DR6101, C 57T1)',
-  ub2: 'Reserva X NN T N (ej: C 57T1, M 12R1, E 37R5)',
-  sku: 'Alfanumérico con _ - . (ej: 00037_1, 00375-79760)'
+  ubReserva: 'Letra(s)+espacio+2 dígitos (ej: C 57T1, M 12R1, E 37R5)',
+  sku:       'Alfanumérico con _ - . (ej: 00037_1, 00375-79760)'
 };
 
 let inventario = [];
@@ -261,18 +246,18 @@ let deleteTargetId = null;
 /* ---------- Utils ---------- */
 const $ = id => document.getElementById(id);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-const saveState = () => { try{ localStorage.setItem('inv_univ_sep2026', JSON.stringify(inventario)); }catch(e){} };
-const loadState = () => { try{ const r = localStorage.getItem('inv_univ_sep2026'); if(r) inventario = JSON.parse(r)||[]; }catch(e){ inventario = []; } };
+const saveState = () => { try{ localStorage.setItem('reservas_univ_sep2026', JSON.stringify(inventario)); }catch(e){} };
+const loadState = () => { try{ const r = localStorage.getItem('reservas_univ_sep2026'); if(r) inventario = JSON.parse(r)||[]; }catch(e){ inventario = []; } };
 
 /* ---------- Render ---------- */
 function render() {
-  // Datalists con valores existentes (autocompletado predictivo)
-  const u1=new Set(),u2=new Set(),sk=new Set();
+  // Datalists autocompletado predictivo
+  const ur=new Set(), sk=new Set();
   inventario.forEach(r=>{
-    if(r.ub1)u1.add(r.ub1); if(r.ub2)u2.add(r.ub2); if(r.sku)sk.add(r.sku);
+    if(r.ubReserva) ur.add(r.ubReserva);
+    if(r.sku) sk.add(r.sku);
   });
-  $('listUb1').innerHTML=[...u1].sort().map(v=>`<option value="${v}">`).join('');
-  $('listUb2').innerHTML=[...u2].sort().map(v=>`<option value="${v}">`).join('');
+  $('listUbReserva').innerHTML=[...ur].sort().map(v=>`<option value="${v}">`).join('');
   $('listSku').innerHTML=[...sk].sort().map(v=>`<option value="${v}">`).join('');
 
   // Filtros
@@ -281,7 +266,7 @@ function render() {
   const datos = inventario.filter(r=>{
     if(est && r.estado!==est) return false;
     if(txt){
-      const b=`${r.ub1} ${r.ub2} ${r.sku}`.toUpperCase();
+      const b=`${r.ubReserva} ${r.sku}`.toUpperCase();
       return b.includes(txt);
     }
     return true;
@@ -291,8 +276,7 @@ function render() {
   const tbody=$('tbody');
   tbody.innerHTML = datos.map(r=>`
     <tr class="hover:bg-slate-50 transition">
-      <td class="px-4 py-3 font-medium">${r.ub1||'—'}</td>
-      <td class="px-4 py-3 font-medium text-purple-600">${r.ub2||'—'}</td>
+      <td class="px-4 py-3 font-medium text-purple-600">${r.ubReserva||'—'}</td>
       <td class="px-4 py-3 font-mono text-xs">${r.sku||'—'}</td>
       <td class="px-4 py-3">${badge(r.estado)}</td>
       <td class="px-4 py-3 text-right font-medium">${r.cantidad}</td>
@@ -311,7 +295,7 @@ function render() {
   $('statTotal').textContent=total;
   $('statDisponible').textContent=inventario.filter(r=>r.estado==='Disponible').length;
   $('statOcupada').textContent=inventario.filter(r=>r.estado==='Ocupada').length;
-  $('statReserva').textContent=inventario.filter(r=>r.estado==='Reserva'||(r.ub2&&/R/.test(r.ub2))).length;
+  $('statReserva').textContent=inventario.filter(r=>r.estado==='Reserva').length;
   $('totalCount').textContent=total;
 }
 function badge(est){
@@ -339,7 +323,7 @@ function validateField(id){
   return {ok:true};
 }
 
-['ub1','ub2','sku'].forEach(id=>{
+['ubReserva','sku'].forEach(id=>{
   $(id).addEventListener('input',()=>validateField(id));
   $(id).addEventListener('blur',()=>validateField(id));
 });
@@ -347,30 +331,28 @@ function validateField(id){
 /* ---------- Alta ---------- */
 $('formAlta').addEventListener('submit', e=>{
   e.preventDefault();
-  const v1=validateField('ub1'), v2=validateField('ub2'), v3=validateField('sku');
-  const ub1=$('ub1').value.trim().toUpperCase();
-  const ub2=$('ub2').value.trim().toUpperCase();
+  const vR=validateField('ubReserva'), vS=validateField('sku');
+  const ubReserva=$('ubReserva').value.trim().toUpperCase();
   const sku=$('sku').value.trim().toUpperCase();
   const estado=$('estado').value;
   const cantidad=parseInt($('cantidad').value)||0;
 
-  if(!ub1 && !ub2){ return msg('Debes ingresar al menos Ubicación 1 o Ubicación 2.','red'); }
-  if(!v1.ok||!v2.ok||!v3.ok){ return msg('Corrige los campos marcados en rojo antes de guardar.','red'); }
-  if(ub1 && !ub2 && estado==='Reserva'){ return msg('Estado "Reserva" requiere Ubicación 2.','red'); }
-  if(ub2 && !REGEX.ub2.test(ub2)){ return msg('Ubicación 2 no cumple el formato de reserva.','red'); }
+  if(!ubReserva){ return msg('La Ubicación de reserva es obligatoria.','red'); }
+  if(!vR.ok || !vS.ok){ return msg('Corrige los campos marcados en rojo antes de guardar.','red'); }
+  if(estado==='Reserva' && !ubReserva){ return msg('Estado "Reserva" requiere Ubicación de reserva.','red'); }
   if(cantidad<0){ return msg('La cantidad no puede ser negativa.','red'); }
 
-  const dup = inventario.some(r=>r.ub1===ub1 && r.ub2===ub2 && ub1 && ub2);
-  if(dup){ return msg('Ya existe una ubicación con esa combinación (Ub1 + Ub2).','red'); }
+  const dup = inventario.some(r=>r.ubReserva===ubReserva && r.sku===sku);
+  if(dup){ return msg('Ya existe una reserva con esa Ubicación + SKU.','red'); }
 
-  inventario.push({id:uid(), ub1, ub2, sku, estado, cantidad});
+  inventario.push({id:uid(), ubReserva, sku, estado, cantidad});
   saveState(); render();
 
-  ['ub1','ub2','sku'].forEach(id=>{
+  ['ubReserva','sku'].forEach(id=>{
     $(id).value=''; $(id).classList.remove('ok','err'); $('err-'+id).classList.add('hidden');
   });
-  $('cantidad').value=0; $('estado').value='Disponible';
-  msg('✅ Ubicación registrada correctamente.','green');
+  $('cantidad').value=0; $('estado').value='Reserva';
+  msg('✅ Reserva registrada correctamente.','green');
 });
 
 function msg(text,color){
@@ -386,7 +368,7 @@ function askDelete(id){
   const r=inventario.find(x=>x.id===id); if(!r)return;
   deleteTargetId=id;
   const ocup = r.estado==='Ocupada';
-  $('deleteMsg').innerHTML=`¿Dar de baja la ubicación <b>${r.ub1||''} ${r.ub2||''}</b>?`+(ocup?'<br><span class="text-amber-600 text-xs">⚠ Esta ubicación está OCUPADA.</span>':'');
+  $('deleteMsg').innerHTML=`¿Dar de baja la reserva <b>${r.ubReserva||''}</b>?`+(ocup?'<br><span class="text-amber-600 text-xs">⚠ Esta reserva está marcada como OCUPADA.</span>':'');
   $('deleteModal').classList.remove('hidden'); $('deleteModal').classList.add('flex');
 }
 function closeDeleteModal(){ $('deleteModal').classList.add('hidden'); $('deleteModal').classList.remove('flex'); deleteTargetId=null; }
@@ -397,7 +379,7 @@ function confirmDelete(){
 }
 function limpiarTodo(){
   if(inventario.length===0)return;
-  if(confirm('¿Vaciar por completo el inventario? Esta acción no se puede deshacer.')){
+  if(confirm('¿Vaciar por completo las reservas? Esta acción no se puede deshacer.')){
     inventario=[]; saveState(); render();
   }
 }
@@ -416,13 +398,16 @@ function confirmExport(){
 }
 function exportXLSX(){
   const data=inventario.map(r=>({
-    'Ubicación 1':r.ub1,'Ubicación 2':r.ub2,'SKU':r.sku,'Estado':r.estado,'Cantidad':r.cantidad
+    'Ubicación de reserva': r.ubReserva,
+    'SKU': r.sku,
+    'Estado': r.estado,
+    'Cantidad': r.cantidad
   }));
   const ws=XLSX.utils.json_to_sheet(data);
-  ws['!cols']=[{wch:14},{wch:14},{wch:20},{wch:12},{wch:10}];
+  ws['!cols']=[{wch:22},{wch:20},{wch:12},{wch:10}];
   const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Inventario');
-  XLSX.writeFile(wb,`Universal_Inventario_${new Date().toISOString().slice(0,10)}.xlsx`);
+  XLSX.utils.book_append_sheet(wb,ws,'Reservas');
+  XLSX.writeFile(wb,`Universal_Reservas_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 /* ---------- Filtros y modales ---------- */

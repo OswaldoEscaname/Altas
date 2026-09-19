@@ -16,24 +16,24 @@
   .ok{border-color:#22c55e!important;background:#f0fdf4!important}
   ::-webkit-scrollbar{width:8px;height:8px}
   ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
-  /* Dropdown custom autocompletado */
   .ac-dropdown{
     position:absolute;z-index:60;left:0;right:0;top:100%;margin-top:4px;
     background:#fff;border:1px solid #e2e8f0;border-radius:10px;
     box-shadow:0 10px 25px -5px rgba(0,0,0,.15);
-    max-height:220px;overflow-y:auto;display:none;
+    max-height:240px;overflow-y:auto;display:none;
   }
   .ac-dropdown.show{display:block}
   .ac-item{padding:8px 12px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center;transition:background .1s}
   .ac-item:hover,.ac-item.active{background:#eef2ff}
   .ac-item .ac-code{font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#1e293b}
-  .ac-item .ac-hint{font-size:11px;color:#64748b}
+  .ac-item .ac-tag{font-size:10px;padding:2px 6px;border-radius:9999px;background:#f1f5f9;color:#475569}
+  .ac-item .ac-tag.hist{background:#dcfce7;color:#166534}
+  .ac-item .ac-tag.pat{background:#ede9fe;color:#5b21b6}
   .ac-empty{padding:10px 12px;font-size:12px;color:#94a3b8;text-align:center}
 </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
-<!-- HEADER -->
 <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
     <div class="flex items-center gap-3">
@@ -61,26 +61,26 @@
   <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
       <div class="flex items-center justify-between">
-        <div><p class="text-xs text-slate-500 font-medium uppercase">Total</p><p id="statTotal" class="text-2xl font-bold">0</p></div>
+        <div><p class="text-xs text-slate-500 font-medium uppercase">Reservas</p><p id="statTotal" class="text-2xl font-bold">0</p></div>
         <div class="bg-indigo-100 text-indigo-600 p-2.5 rounded-lg"><i class="fa-solid fa-layer-group"></i></div>
       </div>
     </div>
     <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
       <div class="flex items-center justify-between">
-        <div><p class="text-xs text-slate-500 font-medium uppercase">Disponibles</p><p id="statDisponible" class="text-2xl font-bold text-emerald-600">0</p></div>
-        <div class="bg-emerald-100 text-emerald-600 p-2.5 rounded-lg"><i class="fa-solid fa-circle-check"></i></div>
+        <div><p class="text-xs text-slate-500 font-medium uppercase">Unidades</p><p id="statUnidades" class="text-2xl font-bold text-emerald-600">0</p></div>
+        <div class="bg-emerald-100 text-emerald-600 p-2.5 rounded-lg"><i class="fa-solid fa-cubes"></i></div>
       </div>
     </div>
     <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
       <div class="flex items-center justify-between">
-        <div><p class="text-xs text-slate-500 font-medium uppercase">Ocupadas</p><p id="statOcupada" class="text-2xl font-bold text-amber-600">0</p></div>
-        <div class="bg-amber-100 text-amber-600 p-2.5 rounded-lg"><i class="fa-solid fa-box"></i></div>
+        <div><p class="text-xs text-slate-500 font-medium uppercase">SKU únicos</p><p id="statSkus" class="text-2xl font-bold text-amber-600">0</p></div>
+        <div class="bg-amber-100 text-amber-600 p-2.5 rounded-lg"><i class="fa-solid fa-barcode"></i></div>
       </div>
     </div>
     <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
       <div class="flex items-center justify-between">
-        <div><p class="text-xs text-slate-500 font-medium uppercase">Reservas</p><p id="statReserva" class="text-2xl font-bold text-purple-600">0</p></div>
-        <div class="bg-purple-100 text-purple-600 p-2.5 rounded-lg"><i class="fa-solid fa-bookmark"></i></div>
+        <div><p class="text-xs text-slate-500 font-medium uppercase">Recientes (7d)</p><p id="statRecientes" class="text-2xl font-bold text-purple-600">0</p></div>
+        <div class="bg-purple-100 text-purple-600 p-2.5 rounded-lg"><i class="fa-solid fa-clock-rotate-left"></i></div>
       </div>
     </div>
   </section>
@@ -92,34 +92,26 @@
         <i class="fa-solid fa-plus-circle text-indigo-600"></i>
         <h2 class="font-semibold">Alta de Reserva</h2>
       </div>
-      <p class="text-xs text-slate-500">Con autocompletado predictivo desde catálogo del Excel</p>
+      <p class="text-xs text-slate-500">Autocompletado predictivo basado en patrones e historial</p>
     </div>
     <form id="formAlta" class="p-5 grid grid-cols-1 md:grid-cols-12 gap-4" novalidate>
-      <div class="md:col-span-4 relative">
+      <div class="md:col-span-5 relative">
         <label class="block text-xs font-medium text-slate-600 mb-1">
           Ubicación de reserva <span class="text-purple-500">*</span>
         </label>
         <input type="text" id="ubReserva" autocomplete="off" maxlength="12"
           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
-          placeholder="Escribe ej: C 5...">
+          placeholder="Escribe ej: C 5...  (sugerencias aparecen abajo)">
         <div id="ac-ubReserva" class="ac-dropdown"></div>
         <p id="err-ubReserva" class="text-xs text-red-600 mt-1 hidden"></p>
       </div>
-      <div class="md:col-span-4 relative">
+      <div class="md:col-span-5 relative">
         <label class="block text-xs font-medium text-slate-600 mb-1">SKU / Clave</label>
         <input type="text" id="sku" autocomplete="off" maxlength="30"
           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
-          placeholder="Escribe ej: 208 o 00037...">
+          placeholder="Escribe ej: 208...  (sugerencias aparecen abajo)">
         <div id="ac-sku" class="ac-dropdown"></div>
         <p id="err-sku" class="text-xs text-red-600 mt-1 hidden"></p>
-      </div>
-      <div class="md:col-span-2">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Estado</label>
-        <select id="estado" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-          <option value="Reserva">Reserva</option>
-          <option value="Disponible">Disponible</option>
-          <option value="Ocupada">Ocupada</option>
-        </select>
       </div>
       <div class="md:col-span-2">
         <label class="block text-xs font-medium text-slate-600 mb-1">Cant.</label>
@@ -138,14 +130,14 @@
     </form>
   </section>
 
-  <!-- LEYENDA REGLAS -->
+  <!-- LEYENDA -->
   <section class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-xs text-blue-900">
-    <p class="font-semibold mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Reglas de validación activas (basadas en el Excel):</p>
+    <p class="font-semibold mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Reglas de validación (basadas en el Excel):</p>
     <ul class="grid md:grid-cols-2 gap-2 list-disc list-inside">
       <li><b>Ubicación de reserva:</b> Letra(s) + espacio + 2 dígitos + código (ej: <code>C 57T1</code>, <code>M 12R1</code>, <code>E 37R5</code>, <code>DR38T2</code>)</li>
       <li><b>SKU:</b> Alfanumérico con <code>_ - . /</code> y sufijo opcional <code>PROMO</code> (ej: <code>00037_1</code>, <code>00375-79760</code>)</li>
     </ul>
-    <p class="mt-2 text-blue-700"><i class="fa-solid fa-lightbulb mr-1"></i>Al escribir verás sugerencias del catálogo real del Excel + lo que ya registraste.</p>
+    <p class="mt-2 text-blue-700"><i class="fa-solid fa-lightbulb mr-1"></i>El autocompletado aprende de lo que registras + sugiere según el patrón del Excel.</p>
   </section>
 
   <!-- FILTROS Y TABLA -->
@@ -158,14 +150,8 @@
       <div class="flex flex-wrap items-center gap-2">
         <div class="relative">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          <input type="text" id="filtroTexto" placeholder="Buscar..." class="pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-44">
+          <input type="text" id="filtroTexto" placeholder="Buscar..." class="pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-52">
         </div>
-        <select id="filtroEstado" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-          <option value="">Todos</option>
-          <option value="Reserva">Reserva</option>
-          <option value="Disponible">Disponible</option>
-          <option value="Ocupada">Ocupada</option>
-        </select>
         <button onclick="limpiarTodo()" class="text-xs text-red-600 hover:text-red-700 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg transition">
           <i class="fa-solid fa-trash-can mr-1"></i>Vaciar
         </button>
@@ -177,7 +163,6 @@
           <tr>
             <th class="px-4 py-3 text-left font-medium">Ubicación de reserva</th>
             <th class="px-4 py-3 text-left font-medium">SKU</th>
-            <th class="px-4 py-3 text-left font-medium">Estado</th>
             <th class="px-4 py-3 text-right font-medium">Cantidad</th>
             <th class="px-4 py-3 text-center font-medium">Acciones</th>
           </tr>
@@ -244,99 +229,288 @@ const HINTS = {
 };
 
 /* =========================================================
-   CATÁLOGO SEMILLA (extraído del Excel Universal_Sept_2026)
-   Estos son valores reales vistos en el archivo.
+   PLANTILLAS DERIVADAS DEL EXCEL (para autocompletado)
    ========================================================= */
-const CATALOGO_UB_RESERVA = [
-  // Reservas tipo "C NNTN" (pasillo C de reservas)
-  "C 56T1","C 56T2","C 56T3","C 56T4","C 57T1","C 57T2","C 57T3","C 57T4",
-  "C 58T1","C 58T2","C 58T3","C 58T4","C 59T1","C 59T2","C 59T3","C 59T4",
-  "C 60T1","C 60T2","C 60T3","C 60T4","C 61T1",
-  // Reservas tipo "DR NN T N"
-  "DR01T1","DR03T1","DR03T2","DR06T3","DR06T4","DR09T1","DR09T2","DR09T3","DR09T4",
-  "DR09T6","DR14T1","DR14T2","DR14T3","DR14T7","DR15T1","DR16T1","DR16T2","DR16T3",
-  "DR16T4","DR17T1","DR18T1","DR18T2","DR18T3","DR18T4","DR20T2",
-  "DR22T1","DR22T4","DR23T1","DR24T1","DR24T2","DR24T3","DR24T4","DR24T6","DR25T1",
-  "DR26T1","DR27T1","DR27T2","DR27T3","DR27T4","DR28T1","DR28T2","DR28T3",
-  "DR29T1","DR29T2","DR30T1","DR30T3","DR30T4","DR30T5","DR30T6","DR31T1","DR31T2",
-  "DR31T3","DR32T2","DR32T4","DR33T1","DR33T2","DR33T4","DR34T1","DR34T2","DR34T3",
-  "DR35T1","DR35T2","DR35T3","DR36T1","DR36T3","DR36T4","DR37T1","DR37T4","DR38T1",
-  "DR38T2","DR39T1","DR40T1","DR40T3","DR40T4","DR41T1","DR41T4","DR42T1","DR42T3",
-  "DR42T4","DR43T3","DR43T4","DR46T4","DR47T1","DR47T2","DR48T1","DR48T4",
-  "DR50T1","DR50T5","DR52T2","DR56T1","DR62T2","DR62T3","DR64T1","DR64T5","DR64T6",
-  "DR66T1","DR68T1","DR70T5","DR70T6","DR71T1","DR72T1","DR72T2","DR73T1",
-  "DR74T1","DR74T2","DR74T3","DR75T2","DR75T3","DR75T4","DR76T1","DR76T2","DR76T3",
-  "DR76T4","DR77T2","DR77T3","DR77T4","DR78T1","DR78T2","DR78T3","DR78T4",
-  "DR79T1","DR79T2","DR79T3","DR79T4","DR80T1","DR80T2","DR80T3","DR80T4",
-  "DR81T1","DR82T2","DR82T3","DR83T1","DR83T2","DR83T3","DR83T6","DR84T1",
-  "DR84T2","DR84T3","DR84T5","DR84T6","DR85T1","DR85T2","DR85T3","DR86T3",
-  "DR87T1","DR87T2","DR90T1","DR90T2","DR90T3","DR90T4","A A2R4","A A3R4",
-  "A A4R5","A B1R4","A B4R5","A B503","A B504","B 01T1","B 01T2","B 01T3",
-  "B 02T1","B 02T2","B 02T4","B 03T1","B 03T3","B 03T6","B 04T3","B 04T5",
-  "B 04T6","B 07T1","B 07T2","B 07T4","B 08T2","B 10T1","B 10T2","B 10T3",
-  "B 10T4","B 11T1","B 11T2","B 11T3","B 22T2","B 22T3","B 22T4","B 23T1",
-  "B 28T1","B 29T1","B 31T3","B 39T1","C 01T1","C 01T2","C 01T3","C 02T1",
-  "C 02T2","C 03T1","C 03T2","C 03T3","C 03T4","C 04T1","C 04T3","C 04T4",
-  "C 05T1","C 05T2","C 06T1","C 06T2","C 06T3","C 07T2","C 07T3","C 08T1",
-  "C 08T2","C 09T1","C 09T2","C 09T3","C 09T4","C 10T1","C 10T2","C 10T3",
-  "C 10T6","C 11T2","C 11T3","C 11T4","C 12T1","C 12T2","C 12T3","C 13T1",
-  "C 13T3","C 13T4","C 14T6","C 16T1","C 16T2","C 17T2","C 18T1","C 19T1",
-  "C 19T2","C 19T3","C 19T4","C 20T1","C 20T2","C 20T3","C 21T3","C 22T1",
-  "C 22T2","C 23T1","C 23T2","C 23T3","C 23T4","C 24T1","C 24T2","C 24T3",
-  "C 24T4","C 24T6","C 25T2","C 26T1","C 26T2","C 26T3","C 27T1","C 27T2",
-  "C 27T3","C 28T2","C 28T3","C 28T4","C 29T1","C 29T2","C 29T3","C 29T4",
-  "C 29T6","C 30T3","C 30T4","C 31T1","C 31T2","C 31T3","C 32T1","C 33T1",
-  "C 33T2","C 33T4","C 34T1","C 34T2","C 34T4","C 35T1","C 35T2","C 35T3",
-  "C 36T1","C 36T3","C 37T3","C 37T4","C 38T1","C 39T1","C 40T2","C 41T1",
-  "C 41T4","C 41T6","C 42T3","C 42T4","C 46T2","C 46T4","C 46T6","C 47T3",
-  "C 48T1","C 48T4","C 48T5","C 49T1","C 49T4","C 50T2","C 50T3","C 50T6",
-  "C 52T1","C 54T2","D 00T1","D 00T2","D 01T1","D 01T2","D 01T3","D 01T4",
-  "D 02T1","D 02T2","D 02T3","D 03T1","D 03T2","D 03T3","D 03T4","D 04T2",
-  "D 04T3","D 04T4","D 05T3","D 05T4","D 06T1","D 06T4","D 07T1","D 07T2",
-  "D 07T3","D 07T4","D 08T1","D 08T2","D 08T3","D 08T4","D 09T1","D 09T2",
-  "D 09T3","D 09T4","D 10T1","D 10T2","D 10T3","D 10T4","D 11T1","D 11T2",
-  "D 11T4","D 13T1","D 13T2","D 13T4","D 13T5","D 14T2","D 14T3","D 14T4",
-  "D 14T6","D 15T1","D 15T2","D 15T3","D 15T4","D 15T6","D 16T2","D 16T3",
-  "D 16T6","D 18T1","D 18T4","E 01R8","E 02R8","E 06T4","E 07T1","E 07T3",
-  "E 08R8","E 10R8","E 11R8","E 12R8","E 13R8","E 14R8","E 16R8","E 17R8",
-  "E 18R8","E 19R8","E 20R7","E 20R8","E 21R7","E 22R8","E 23R7","E 25R8",
-  "E 26R6","E 29R8","E 30R6","E 31R8","E 33R8","E 35R8","E 37R5","E 37R8",
-  "E 40R6","E 42R6","E 44R6","E 45R7","E 47R6","E 48R6","E 70T2","E 70T3",
-  "E 70T4","E 70T5","E 70T6","E 71T1","E 72T1","E 73T1","E 74T1","E 74T2",
-  "E 75T1","E 76T1","E 76T2","E 76T3","E 77T1","E 78T1","E 78T3","E 78T4"
+const PREFIJOS_UB = [
+  "A A","A B","B 01","B 02","B 03","B 04","B 07","B 08","B 10","B 11","B 22","B 23","B 28","B 29","B 31","B 39",
+  "C 01","C 02","C 03","C 04","C 05","C 06","C 07","C 08","C 09","C 10","C 11","C 12","C 13","C 14","C 16","C 17","C 18","C 19","C 20","C 21","C 22","C 23","C 24","C 25","C 26","C 27","C 28","C 29","C 30","C 31","C 32","C 33","C 34","C 35","C 36","C 37","C 38","C 39","C 40","C 41","C 42","C 46","C 47","C 48","C 49","C 50","C 52","C 54","C 56","C 57","C 58","C 59","C 60","C 61",
+  "D 00","D 01","D 02","D 03","D 04","D 05","D 06","D 07","D 08","D 09","D 10","D 11","D 13","D 14","D 15","D 16","D 18",
+  "DR01","DR03","DR06","DR09","DR14","DR15","DR16","DR17","DR18","DR20","DR22","DR23","DR24","DR25","DR26","DR27","DR28","DR29","DR30","DR31","DR32","DR33","DR34","DR35","DR36","DR37","DR38","DR39","DR40","DR41","DR42","DR43","DR46","DR47","DR48","DR50","DR52","DR56","DR62","DR64","DR66","DR68","DR70","DR71","DR72","DR73","DR74","DR75","DR76","DR77","DR78","DR79","DR80","DR81","DR82","DR83","DR84","DR85","DR86","DR87","DR90",
+  "E 01","E 02","E 06","E 07","E 08","E 10","E 11","E 12","E 13","E 14","E 16","E 17","E 18","E 19","E 20","E 21","E 22","E 23","E 25","E 26","E 29","E 30","E 31","E 33","E 35","E 37","E 40","E 42","E 44","E 45","E 47","E 48",
+  "E 70","E 71","E 72","E 73","E 74","E 75","E 76","E 77","E 78"
 ];
-CATALOGO_UB_RESERVA = [...new Set(CATALOGO_UB_RESERVA)].sort();
+const SUFIJOS_UB = ["T1","T2","T3","T4","T5","T6","T7","R1","R2","R3","R4","R5","R6","R7","R8"];
 
-const CATALOGO_SKU = [
-  // Claves numéricas puras
-  "208139","7665","7668","7663","7667","7664","16287","167","234399","234400",
-  "4119","234401","4121","234402","191094","234403","234404","234405","234406",
-  "234407","234408","234409","234410","234411","234412","234413","234414","234415",
-  "4142","12529","4141","201901","201902","198747","279708","238138","207183",
-  "234423","234424","234425","4143","191092","191093","4144","192248","288292",
-  "4011","213488","213489","213490","213491","288294","280790","288293","280795",
-  "191100","214409","234428","288295","4014","4015","196886","4016","196888",
-  "4013","280796","197644","280797","280791","7681","7680","7846","12543",
-  "7840","7844","7841","194785","194786","238215","288932","288933","280792",
-  "280793","280794","238210","238218","288934","238211","238216","282954",
-  "193544","288290","4501","4500","288291","238207",
-  // Claves alfanuméricas con guion bajo
-  "00037_1","00038_1","00040_1","00042_1","00044_1","00046_1","00047_1","00048_1",
-  "00049_1","00051_1","00052_1","00053_1","00054_1","00055_1","00058_1","00059_1",
-  "00060_1","00084_1","00085_1","00086_1","00089_1","0100017","0150101",
-  "0150105","0150110","0150111","0150112","0150115","0150118","0150014","0150015",
-  "0150016","0150019","0150020","0150022","0150023","0150029","0150071","0150072",
-  "0150075","0150079","0150080","0150083","0150084","0150085","0150089","0150091",
-  "0150092","0150094","0150181","0150183","0150189","0150195","0150201","0150208",
-  "0150249","0150250","0150251","0150252","0150253","0150288","0200001","0200002",
-  "0200004","0200005","0200006","0200008","0200009","0200011","0200015","0200016",
+const PREFIJOS_SKU = [
+  "00037_1","00038_1","00040_1","00042_1","00044_1","00046_1","00047_1","00048_1","00049_1","00051_1","00052_1","00053_1","00054_1","00055_1","00058_1","00059_1","00060_1","00084_1","00085_1","00086_1","00089_1",
+  "00375-79760","00731-79755","00881-79775","00882-79776","00883-79777","00885-79779","00886-79780","00887-79781","00999-79768",
+  "0100017","0150101","0150105","0150110","0150111","0150112","0150115","0150118","0150014","0150015","0150016","0150019","0150020","0150022","0150023","0150029","0150071","0150072","0150075","0150079","0150080","0150083","0150084","0150085","0150089","0150091","0150092","0150094","0150181","0150183","0150189","0150195","0150201","0150208","0150249","0150250","0150251","0150252","0150253",
+  "0200001","0200002","0200004","0200005","0200006","0200008","0200009","0200011","0200015","0200016",
   "0290016","0290042","0290054","0290010","0290011","0290012","0290013","0290017",
-  "020072721","0303906","0310110","0311","0311A","0320012","0320013","0320014",
-  "0340043","0340044","0340045","0340047","0340048","0340058","0340060","0340012",
-  "0340013","0340014","0340015","0340016","0340017","0340019","0340020","0340021",
-  "0340022","0340023","0340024","0340025","0340026","0340027","0340029","0340030",
-  "0340031","0340032","0340033","0340034","0340035","0340036","0340037","0340039",
-  "0340040","0340041","03449","03450","03451","03452","03542","036A","037A",
-  "03859","03898","038A","04159-79759","041A","0420013","0420014","0420015",
-  "0420018","0420026","0420027","0420028","0420029","0420030","0420035",
-  "050-1976","050-2167","050
+  "0310110","0320012","0320013","0320014","0340043","0340044","0340045","0340047","0340048","0340058","0340060","0340012","0340013","0340014","0340015","0340016","0340017","0340019","0340020","0340021","0340022","0340023","0340024","0340025","0340026","0340027","0340029","0340030","0340031","0340032","0340033","0340034","0340035","0340036","0340037","0340039","0340040","0340041",
+  "04159-79759","0420013","0420014","0420015","0420018","0420026","0420027","0420028","0420029","0420030","0420035",
+  "050-1976","050-2167","050-2168","050-2169"
+];
+
+/* =========================================================
+   ESTADO
+   ========================================================= */
+let inventario = [];
+let deleteTargetId = null;
+
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const saveState = () => { try{ localStorage.setItem('reservas_univ_sep2026', JSON.stringify(inventario)); }catch(e){} };
+const loadState = () => { try{ const r = localStorage.getItem('reservas_univ_sep2026'); if(r) inventario = JSON.parse(r)||[]; }catch(e){ inventario = []; } };
+
+/* =========================================================
+   MOTOR DE SUGERENCIAS PREDICTIVAS
+   Combina: historial + plantillas de patrón + prefijos del Excel
+   ========================================================= */
+function generarSugerencias(tipo, query) {
+  const q = (query||'').trim().toUpperCase();
+  const resultMap = new Map();
+
+  // 1) HISTORIAL
+  inventario.forEach(r=>{
+    const v = tipo==='ubReserva' ? r.ubReserva : r.sku;
+    if(v) resultMap.set(v, {tag:'hist', label:'historial'});
+  });
+
+  // 2) PLANTILLAS del Excel
+  if(tipo==='ubReserva'){
+    PREFIJOS_UB.forEach(p=>{
+      SUFIJOS_UB.forEach(s=>{
+        const v = `${p}${s}`;
+        if(!resultMap.has(v)) resultMap.set(v, {tag:'pat', label:'patrón'});
+      });
+    });
+  } else if(tipo==='sku'){
+    PREFIJOS_SKU.forEach(p=>{
+      if(!resultMap.has(p)) resultMap.set(p, {tag:'pat', label:'patrón'});
+    });
+  }
+
+  // 3) Filtrar por query
+  let items = [...resultMap.entries()].map(([v,meta])=>({value:v, ...meta}));
+  if(q){
+    items = items.filter(it => it.value.toUpperCase().includes(q));
+    items.sort((a,b)=>{
+      const aStart = a.value.toUpperCase().startsWith(q) ? 0 : 1;
+      const bStart = b.value.toUpperCase().startsWith(q) ? 0 : 1;
+      if(aStart!==bStart) return aStart-bStart;
+      if(a.tag!==b.tag) return a.tag==='hist'?-1:1;
+      return a.value.localeCompare(b.value);
+    });
+  } else {
+    items.sort((a,b)=>{
+      if(a.tag!==b.tag) return a.tag==='hist'?-1:1;
+      return a.value.localeCompare(b.value);
+    });
+  }
+  return items.slice(0, 12);
+}
+
+/* =========================================================
+   AUTOCOMPLETADO CUSTOM
+   ========================================================= */
+function setupAutocomplete(inputId, tipo) {
+  const input = $(inputId);
+  const dropdown = $('ac-'+inputId);
+  let activeIndex = -1;
+  let currentItems = [];
+
+  function closeDropdown(){
+    dropdown.classList.remove('show');
+    dropdown.innerHTML = '';
+    activeIndex = -1;
+    currentItems = [];
+  }
+
+  function renderDropdown(){
+    if(currentItems.length===0){
+      dropdown.innerHTML = '<div class="ac-empty">Sin sugerencias. Sigue escribiendo…</div>';
+      dropdown.classList.add('show');
+      return;
+    }
+    dropdown.innerHTML = currentItems.map((it, i)=>`
+      <div class="ac-item ${i===activeIndex?'active':''}" data-idx="${i}">
+        <span class="ac-code">${it.value}</span>
+        <span class="ac-tag ${it.tag==='hist'?'hist':'pat'}">${it.label}</span>
+      </div>
+    `).join('');
+    dropdown.classList.add('show');
+  }
+
+  input.addEventListener('input', ()=>{
+    currentItems = generarSugerencias(tipo, input.value.trim());
+    activeIndex = -1;
+    renderDropdown();
+  });
+
+  input.addEventListener('focus', ()=>{
+    currentItems = generarSugerencias(tipo, input.value.trim());
+    activeIndex = -1;
+    renderDropdown();
+  });
+
+  input.addEventListener('keydown', (e)=>{
+    if(!dropdown.classList.contains('show')) return;
+    if(e.key==='ArrowDown'){
+      e.preventDefault();
+      activeIndex = Math.min(activeIndex+1, currentItems.length-1);
+      renderDropdown();
+    } else if(e.key==='ArrowUp'){
+      e.preventDefault();
+      activeIndex = Math.max(activeIndex-1, -1);
+      renderDropdown();
+    } else if(e.key==='Enter'){
+      if(activeIndex >= 0 && currentItems[activeIndex]){
+        e.preventDefault();
+        input.value = currentItems[activeIndex].value;
+        closeDropdown();
+        validateField(inputId);
+      }
+    } else if(e.key==='Escape'){
+      closeDropdown();
+    }
+  });
+
+  dropdown.addEventListener('mousedown', (e)=>{
+    const item = e.target.closest('.ac-item');
+    if(!item) return;
+    e.preventDefault();
+    const idx = parseInt(item.dataset.idx, 10);
+    if(currentItems[idx]){
+      input.value = currentItems[idx].value;
+      closeDropdown();
+      validateField(inputId);
+    }
+  });
+
+  input.addEventListener('blur', ()=>{
+    setTimeout(closeDropdown, 150);
+  });
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function render() {
+  const txt=$('filtroTexto').value.trim().toUpperCase();
+  const datos = inventario.filter(r=>{
+    if(txt){
+      const b=`${r.ubReserva} ${r.sku}`.toUpperCase();
+      return b.includes(txt);
+    }
+    return true;
+  });
+
+  const tbody=$('tbody');
+  tbody.innerHTML = datos.map(r=>`
+    <tr class="hover:bg-slate-50 transition">
+      <td class="px-4 py-3 font-medium text-purple-600">${r.ubReserva||'—'}</td>
+      <td class="px-4 py-3 font-mono text-xs">${r.sku||'—'}</td>
+      <td class="px-4 py-3 text-right font-medium">${r.cantidad}</td>
+      <td class="px-4 py-3 text-center">
+        <button onclick="askDelete('${r.id}')" class="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition" title="Dar de baja">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </td>
+    </tr>
+  `).join('');
+
+  $('emptyState').style.display = datos.length===0 ? 'block':'none';
+
+  // Stats
+  const total=inventario.length;
+  const unidades = inventario.reduce((s,r)=>s+(r.cantidad||0), 0);
+  const skus = new Set(inventario.map(r=>r.sku).filter(Boolean)).size;
+  const ahora = Date.now();
+  const sieteDias = 7*24*60*60*1000;
+  const recientes = inventario.filter(r=>{
+    // Si no hay createdAt, usamos el id (timestamp base36)
+    const ts = r.createdAt || parseInt(r.id, 36);
+    return (ahora - ts) < sieteDias;
+  }).length;
+
+  $('statTotal').textContent=total;
+  $('statUnidades').textContent=unidades.toLocaleString('es-MX');
+  $('statSkus').textContent=skus;
+  $('statRecientes').textContent=recientes;
+  $('totalCount').textContent=total;
+}
+
+/* =========================================================
+   VALIDACIÓN EN TIEMPO REAL
+   ========================================================= */
+function validateField(id){
+  const el=$(id), err=$('err-'+id);
+  const val=el.value.trim().toUpperCase();
+  el.value=val;
+  if(val===''){
+    el.classList.remove('err','ok'); err.classList.add('hidden');
+    return {ok:true, empty:true};
+  }
+  if(!REGEX[id].test(val)){
+    el.classList.add('err'); el.classList.remove('ok');
+    err.textContent='Formato inválido. Esperado: '+HINTS[id];
+    err.classList.remove('hidden');
+    return {ok:false};
+  }
+  el.classList.remove('err'); el.classList.add('ok');
+  err.classList.add('hidden');
+  return {ok:true};
+}
+
+['ubReserva','sku'].forEach(id=>{
+  $(id).addEventListener('blur',()=>validateField(id));
+});
+
+/* =========================================================
+   ALTA
+   ========================================================= */
+$('formAlta').addEventListener('submit', e=>{
+  e.preventDefault();
+  const vR=validateField('ubReserva'), vS=validateField('sku');
+  const ubReserva=$('ubReserva').value.trim().toUpperCase();
+  const sku=$('sku').value.trim().toUpperCase();
+  const cantidad=parseInt($('cantidad').value)||0;
+
+  if(!ubReserva){ return msg('La Ubicación de reserva es obligatoria.','red'); }
+  if(!vR.ok || !vS.ok){ return msg('Corrige los campos marcados en rojo antes de guardar.','red'); }
+  if(cantidad<0){ return msg('La cantidad no puede ser negativa.','red'); }
+
+  const dup = inventario.some(r=>r.ubReserva===ubReserva && r.sku===sku);
+  if(dup){ return msg('Ya existe una reserva con esa Ubicación + SKU.','red'); }
+
+  inventario.push({
+    id: uid(),
+    createdAt: Date.now(),
+    ubReserva, sku, cantidad
+  });
+  saveState(); render();
+
+  ['ubReserva','sku'].forEach(id=>{
+    $(id).value=''; $(id).classList.remove('ok','err'); $('err-'+id).classList.add('hidden');
+  });
+  $('cantidad').value=0;
+  msg('✅ Reserva registrada correctamente.','green');
+});
+
+function msg(text,color){
+  const el=$('formMsg');
+  el.textContent=text;
+  el.className='md:col-span-12 text-sm '+(color==='red'?'text-red-600':'text-emerald-600');
+  el.classList.remove('hidden');
+  setTimeout(()=>el.classList.add('hidden'),3500);
+}
+
+/* =========================================================
+   BAJA
+   ========================================================= */
+function askDelete(id){
+  const r=inventario.find(x=>x.id===id); if(!r)return;
+  deleteTargetId=id;
+  $('deleteMsg').innerHTML=`¿Dar de baja la reserva <b>${r.ubReserva||''}</b>${r.sku?' con SKU <b>'+r.sku+'</b>':''}?`;
+  $('deleteModal').classList.remove('hidden');

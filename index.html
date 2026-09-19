@@ -31,6 +31,7 @@
   .ac-item .ac-tag.hist{background:#dcfce7;color:#166534}
   .ac-item .ac-tag.pat{background:#ede9fe;color:#5b21b6}
   .ac-empty{padding:10px 12px;font-size:12px;color:#94a3b8;text-align:center}
+  .readonly-field{background:#f8fafc!important;color:#475569!important;cursor:not-allowed!important}
 </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
@@ -118,20 +119,30 @@
         <p id="err-alterno" class="text-xs text-red-600 mt-1 hidden"></p>
       </div>
 
+      <!-- Campos auto: solo lectura, se llenan al elegir alterno del catálogo -->
       <div class="md:col-span-3">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Corto <span class="text-slate-400 text-xs">(auto)</span></label>
-        <input type="text" id="corto" autocomplete="off" maxlength="30"
-          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+        <label class="block text-xs font-medium text-slate-600 mb-1">
+          Corto <span class="text-slate-400 text-xs">(auto)</span>
+        </label>
+        <input type="text" id="corto" readonly tabindex="-1"
+          class="readonly-field w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none uppercase"
+          placeholder="—">
       </div>
       <div class="md:col-span-3">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Clave <span class="text-slate-400 text-xs">(auto)</span></label>
-        <input type="text" id="clave" autocomplete="off" maxlength="30"
-          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+        <label class="block text-xs font-medium text-slate-600 mb-1">
+          Clave <span class="text-slate-400 text-xs">(auto)</span>
+        </label>
+        <input type="text" id="clave" readonly tabindex="-1"
+          class="readonly-field w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none uppercase"
+          placeholder="—">
       </div>
       <div class="md:col-span-4">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Artículo <span class="text-slate-400 text-xs">(auto)</span></label>
-        <input type="text" id="articulo" autocomplete="off" maxlength="120"
-          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+        <label class="block text-xs font-medium text-slate-600 mb-1">
+          Artículo <span class="text-slate-400 text-xs">(auto)</span>
+        </label>
+        <input type="text" id="articulo" readonly tabindex="-1"
+          class="readonly-field w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"
+          placeholder="—">
       </div>
       <div class="md:col-span-2">
         <label class="block text-xs font-medium text-slate-600 mb-1">Cant.</label>
@@ -156,7 +167,7 @@
     <p class="font-semibold mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Reglas de validación:</p>
     <ul class="grid md:grid-cols-2 gap-2 list-disc list-inside">
       <li><b>Ubicación de reserva:</b> Letra(s) + espacio + 2 dígitos + código (ej: <code>C 57T1</code>, <code>M 12R1</code>, <code>E 37R5</code>)</li>
-      <li><b>Alterno:</b> Debe existir en el catálogo maestro del Excel. Al elegirlo se autocompletan <b>Corto</b>, <b>Clave</b> y <b>Artículo</b>.</li>
+      <li><b>Alterno:</b> Debe existir en el catálogo maestro del Excel. Al elegirlo se autocompletan <b>Corto</b>, <b>Clave</b> y <b>Artículo</b> (solo lectura).</li>
     </ul>
   </section>
 
@@ -239,11 +250,7 @@
 
 <!-- =========================================================
      BASE DE DATOS MAESTRA (Catálogo del Excel embebido)
-     ---------------------------------------------------------
      Formato compacto: {c: corto, k: clave, a: alterno, d: artículo}
-     Este bloque NO lo modifica el usuario final.
-     Para ampliarlo, reemplaza el JSON por uno nuevo generado
-     desde el Excel.
      ========================================================= -->
 <script id="catalogoMaestro" type="application/json">
 [
@@ -330,4 +337,430 @@
   {"c":"288933","k":"CXMAN1824","a":"01041","d":"Cubierta p/mtto proteccion contra derrames 1.5 a 2ton Cluxer"},
   {"c":"280792","k":"010L","a":"010L","d":"Cuchara p/albañil t/filadelfia # 10 m/mad 010L Lince Celta"},
   {"c":"280793","k":"011_1","a":"011_1","d":"Cuchara p/albañil t/filadelfia # 11 Celta"},
-  {"c":"280794","k":"011L","a":"011L","d":"Cuchara p/albañil t/filadelfia # 11 m
+  {"c":"280794","k":"011L","a":"011L","d":"Cuchara p/albañil t/filadelfia # 11 m/mad 011L Lince Celta"}
+]
+</script>
+
+<script>
+/* =========================================================
+   ESTADO GLOBAL
+   ========================================================= */
+let CATALOGO = [];      // catálogo maestro cargado
+let RESERVAS = [];      // reservas registradas
+let deleteTargetIdx = null;
+
+/* =========================================================
+   CARGA DEL CATÁLOGO
+   ========================================================= */
+function cargarCatalogo() {
+  try {
+    const raw = document.getElementById('catalogoMaestro').textContent;
+    CATALOGO = JSON.parse(raw);
+    document.getElementById('statCatalogo').textContent = CATALOGO.length;
+  } catch (e) {
+    console.error('Error cargando catálogo:', e);
+    CATALOGO = [];
+  }
+}
+
+/* =========================================================
+   UTILIDADES DE VALIDACIÓN
+   ========================================================= */
+// Formato ubicación: letras + espacio + 2 dígitos + código (ej: C 57T1)
+function validarUbicacion(v) {
+  return /^[A-Z]{1,3}\s\d{2}[A-Z0-9]{1,6}$/.test(v.trim().toUpperCase());
+}
+
+// Buscar alterno en catálogo (coincidencia exacta por 'a' o 'k' o 'c')
+function buscarEnCatalogo(termino) {
+  const t = termino.trim().toUpperCase();
+  if (!t) return [];
+  return CATALOGO.filter(x =>
+    x.a.toUpperCase() === t ||
+    x.k.toUpperCase() === t ||
+    x.c.toUpperCase() === t
+  );
+}
+
+// Buscar coincidencias parciales para autocompletado
+function buscarParcial(termino) {
+  const t = termino.trim().toUpperCase();
+  if (!t) return [];
+  return CATALOGO.filter(x =>
+    x.a.toUpperCase().includes(t) ||
+    x.k.toUpperCase().includes(t) ||
+    x.c.toUpperCase().includes(t) ||
+    x.d.toUpperCase().includes(t)
+  ).slice(0, 50);
+}
+
+/* =========================================================
+   AUTOCOMPLETADO UBICACIÓN
+   ========================================================= */
+const UBICACIONES_SUGERIDAS = [
+  'C 57T1','C 58T1','C 59T1','C 60T1','C 61T1',
+  'M 12R1','M 13R1','M 14R1','M 15R1',
+  'E 37R5','E 38R5','E 39R5',
+  'A 01B1','A 02B1','B 10C2','D 20D3'
+];
+
+function setupAutocompleteUbicacion() {
+  const input = document.getElementById('ubReserva');
+  const dropdown = document.getElementById('ac-ubReserva');
+
+  input.addEventListener('input', () => {
+    const v = input.value.trim().toUpperCase();
+    input.value = v;
+    if (!v) { dropdown.classList.remove('show'); return; }
+
+    const matches = UBICACIONES_SUGERIDAS.filter(u => u.includes(v)).slice(0, 10);
+    if (!matches.length) { dropdown.classList.remove('show'); return; }
+
+    dropdown.innerHTML = matches.map(u =>
+      `<div class="ac-item" data-val="${u}">
+        <span class="ac-code">${u}</span>
+        <span class="ac-tag">sugerida</span>
+      </div>`
+    ).join('');
+    dropdown.classList.add('show');
+
+    dropdown.querySelectorAll('.ac-item').forEach(el => {
+      el.addEventListener('click', () => {
+        input.value = el.dataset.val;
+        dropdown.classList.remove('show');
+        validarCampoUbicacion();
+      });
+    });
+  });
+
+  input.addEventListener('blur', () => setTimeout(() => dropdown.classList.remove('show'), 150));
+  input.addEventListener('input', validarCampoUbicacion);
+}
+
+function validarCampoUbicacion() {
+  const input = document.getElementById('ubReserva');
+  const err = document.getElementById('err-ubReserva');
+  const v = input.value.trim().toUpperCase();
+  if (!v) { input.classList.remove('ok','err'); err.classList.add('hidden'); return false; }
+  if (validarUbicacion(v)) {
+    input.classList.add('ok'); input.classList.remove('err');
+    err.classList.add('hidden');
+    return true;
+  } else {
+    input.classList.add('err'); input.classList.remove('ok');
+    err.textContent = 'Formato inválido. Ej: C 57T1';
+    err.classList.remove('hidden');
+    return false;
+  }
+}
+
+/* =========================================================
+   AUTOCOMPLETADO ALTERNO + AUTOFILL
+   ========================================================= */
+function setupAutocompleteAlterno() {
+  const input = document.getElementById('alterno');
+  const dropdown = document.getElementById('ac-alterno');
+
+  input.addEventListener('input', () => {
+    const v = input.value.trim().toUpperCase();
+    input.value = v;
+
+    // Si el usuario borra, limpiamos los campos auto
+    if (!v) {
+      limpiarCamposAuto();
+      dropdown.classList.remove('show');
+      return;
+    }
+
+    // Si coincide exacto con un alterno del catálogo, autocompletamos
+    const exacto = buscarEnCatalogo(v);
+    if (exacto.length === 1) {
+      autofillCamposAuto(exacto[0]);
+    } else {
+      limpiarCamposAuto();
+    }
+
+    const matches = buscarParcial(v);
+    if (!matches.length) {
+      dropdown.innerHTML = `<div class="ac-empty">Sin coincidencias en catálogo</div>`;
+      dropdown.classList.add('show');
+      return;
+    }
+
+    dropdown.innerHTML = matches.map(x => `
+      <div class="ac-item" data-a="${x.a}">
+        <span class="ac-code">${x.a}</span>
+        <span class="ac-desc">${x.d}</span>
+        <span class="ac-tag pat">${x.k}</span>
+      </div>
+    `).join('');
+    dropdown.classList.add('show');
+
+    dropdown.querySelectorAll('.ac-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const item = CATALOGO.find(x => x.a === el.dataset.a);
+        if (item) seleccionarAlterno(item);
+      });
+    });
+  });
+
+  input.addEventListener('blur', () => setTimeout(() => dropdown.classList.remove('show'), 150));
+}
+
+function seleccionarAlterno(item) {
+  document.getElementById('alterno').value = item.a.toUpperCase();
+  autofillCamposAuto(item);
+  document.getElementById('ac-alterno').classList.remove('show');
+  document.getElementById('alterno').classList.add('ok');
+  document.getElementById('err-alterno').classList.add('hidden');
+}
+
+function autofillCamposAuto(item) {
+  document.getElementById('corto').value = (item.c || '').toUpperCase();
+  document.getElementById('clave').value = (item.k || '').toUpperCase();
+  document.getElementById('articulo').value = (item.d || '').toUpperCase();
+}
+
+function limpiarCamposAuto() {
+  document.getElementById('corto').value = '';
+  document.getElementById('clave').value = '';
+  document.getElementById('articulo').value = '';
+}
+
+/* =========================================================
+   GUARDAR RESERVA
+   ========================================================= */
+document.getElementById('formAlta').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const ub = document.getElementById('ubReserva').value.trim().toUpperCase();
+  const alterno = document.getElementById('alterno').value.trim().toUpperCase();
+  const corto = document.getElementById('corto').value.trim();
+  const clave = document.getElementById('clave').value.trim();
+  const articulo = document.getElementById('articulo').value.trim();
+  const cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
+  const msg = document.getElementById('formMsg');
+
+  // Validar ubicación
+  if (!validarCampoUbicacion()) {
+    mostrarMsg('Corrige la ubicación de reserva.', 'error');
+    return;
+  }
+
+  // Validar alterno existe en catálogo
+  const encontrado = buscarEnCatalogo(alterno);
+  if (encontrado.length !== 1) {
+    document.getElementById('alterno').classList.add('err');
+    document.getElementById('err-alterno').textContent = 'El alterno no existe en el catálogo maestro.';
+    document.getElementById('err-alterno').classList.remove('hidden');
+    mostrarMsg('El alterno debe existir en el catálogo.', 'error');
+    return;
+  }
+
+  // Validar que los campos auto estén llenos (por seguridad)
+  if (!corto || !clave || !articulo) {
+    autofillCamposAuto(encontrado[0]);
+  }
+
+  // Crear reserva
+  const reserva = {
+    ub,
+    corto: encontrado[0].c.toUpperCase(),
+    clave: encontrado[0].k.toUpperCase(),
+    alterno: encontrado[0].a.toUpperCase(),
+    articulo: encontrado[0].d.toUpperCase(),
+    cantidad,
+    ts: Date.now()
+  };
+
+  RESERVAS.push(reserva);
+  renderTabla();
+  actualizarStats();
+  mostrarMsg('Reserva guardada correctamente.', 'ok');
+  this.reset();
+  limpiarCamposAuto();
+  document.getElementById('ubReserva').classList.remove('ok','err');
+  document.getElementById('alterno').classList.remove('ok','err');
+});
+
+function mostrarMsg(texto, tipo) {
+  const msg = document.getElementById('formMsg');
+  msg.textContent = texto;
+  msg.className = 'md:col-span-12 text-sm ' + (tipo === 'ok' ? 'text-emerald-600' : 'text-red-600');
+  msg.classList.remove('hidden');
+  setTimeout(() => msg.classList.add('hidden'), 3500);
+}
+
+/* =========================================================
+   RENDER TABLA
+   ========================================================= */
+function renderTabla() {
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('emptyState');
+  const filtro = (document.getElementById('filtroTexto').value || '').trim().toUpperCase();
+
+  let lista = RESERVAS.slice().sort((a,b) => b.ts - a.ts);
+  if (filtro) {
+    lista = lista.filter(r =>
+      r.ub.includes(filtro) ||
+      r.corto.includes(filtro) ||
+      r.clave.includes(filtro) ||
+      r.alterno.includes(filtro) ||
+      r.articulo.includes(filtro)
+    );
+  }
+
+  if (!lista.length) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    document.getElementById('totalCount').textContent = RESERVAS.length;
+    return;
+  }
+  empty.classList.add('hidden');
+
+  tbody.innerHTML = lista.map(r => {
+    const idx = RESERVAS.indexOf(r);
+    return `<tr class="hover:bg-slate-50">
+      <td class="px-3 py-2 font-medium">${r.ub}</td>
+      <td class="px-3 py-2 text-slate-600">${r.corto}</td>
+      <td class="px-3 py-2 text-slate-600">${r.clave}</td>
+      <td class="px-3 py-2 font-mono text-xs">${r.alterno}</td>
+      <td class="px-3 py-2 text-slate-600">${r.articulo}</td>
+      <td class="px-3 py-2 text-right font-semibold">${r.cantidad}</td>
+      <td class="px-3 py-2 text-center">
+        <button onclick="pedirDelete(${idx})" class="text-red-500 hover:text-red-700 p-1" title="Eliminar">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('totalCount').textContent = RESERVAS.length;
+}
+
+document.getElementById('filtroTexto').addEventListener('input', renderTabla);
+
+/* =========================================================
+   STATS
+   ========================================================= */
+function actualizarStats() {
+  document.getElementById('statTotal').textContent = RESERVAS.length;
+  const unidades = RESERVAS.reduce((s,r) => s + (parseFloat(r.cantidad)||0), 0);
+  document.getElementById('statUnidades').textContent = unidades;
+  const skus = new Set(RESERVAS.map(r => r.alterno)).size;
+  document.getElementById('statSkus').textContent = skus;
+}
+
+/* =========================================================
+   ELIMINAR
+   ========================================================= */
+function pedirDelete(idx) {
+  deleteTargetIdx = idx;
+  const r = RESERVAS[idx];
+  document.getElementById('deleteMsg').textContent = `¿Eliminar la reserva ${r.ub} · ${r.alterno}?`;
+  document.getElementById('deleteModal').classList.remove('hidden');
+  document.getElementById('deleteModal').classList.add('flex');
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.add('hidden');
+  document.getElementById('deleteModal').classList.remove('flex');
+  deleteTargetIdx = null;
+}
+
+function confirmDelete() {
+  if (deleteTargetIdx === null) return;
+  RESERVAS.splice(deleteTargetIdx, 1);
+  closeDeleteModal();
+  renderTabla();
+  actualizarStats();
+}
+
+/* =========================================================
+   VACIAR TODO
+   ========================================================= */
+function limpiarTodo() {
+  if (!RESERVAS.length) return;
+  if (!confirm('¿Vaciar TODAS las reservas registradas?')) return;
+  RESERVAS = [];
+  renderTabla();
+  actualizarStats();
+}
+
+/* =========================================================
+   EXPORTAR XLSX (protegido con contraseña)
+   ========================================================= */
+const EXPORT_PASS = 'admin2026'; // cambia aquí tu contraseña
+
+function openExportModal() {
+  document.getElementById('exportModal').classList.remove('hidden');
+  document.getElementById('exportModal').classList.add('flex');
+  document.getElementById('exportPass').value = '';
+  document.getElementById('exportError').classList.add('hidden');
+  setTimeout(() => document.getElementById('exportPass').focus(), 100);
+}
+
+function closeExportModal() {
+  document.getElementById('exportModal').classList.add('hidden');
+  document.getElementById('exportModal').classList.remove('flex');
+}
+
+function confirmExport() {
+  const pass = document.getElementById('exportPass').value;
+  if (pass !== EXPORT_PASS) {
+    document.getElementById('exportError').classList.remove('hidden');
+    return;
+  }
+  closeExportModal();
+  exportarXLSX();
+}
+
+function exportarXLSX() {
+  if (!RESERVAS.length) {
+    alert('No hay reservas para exportar.');
+    return;
+  }
+  const data = RESERVAS.map(r => ({
+    'Ubicación': r.ub,
+    'Corto': r.corto,
+    'Clave': r.clave,
+    'Alterno': r.alterno,
+    'Artículo': r.articulo,
+    'Cantidad': r.cantidad
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Reservas');
+  const fecha = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `Reservas_Universal_${fecha}.xlsx`);
+}
+
+/* =========================================================
+   RESET FORM
+   ========================================================= */
+document.getElementById('formAlta').addEventListener('reset', () => {
+  setTimeout(() => {
+    limpiarCamposAuto();
+    ['ubReserva','alterno'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('ok','err');
+    });
+    document.getElementById('err-ubReserva').classList.add('hidden');
+    document.getElementById('err-alterno').classList.add('hidden');
+  }, 0);
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+document.addEventListener('DOMContentLoaded', () => {
+  cargarCatalogo();
+  setupAutocompleteUbicacion();
+  setupAutocompleteAlterno();
+  renderTabla();
+  actualizarStats();
+});
+</script>
+
+</body>
+</html>

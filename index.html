@@ -57,7 +57,6 @@
 
 <main class="max-w-7xl mx-auto px-4 py-6">
 
-  <!-- STATS -->
   <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
       <div class="flex items-center justify-between">
@@ -85,7 +84,6 @@
     </div>
   </section>
 
-  <!-- FORM ALTA -->
   <section class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
     <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
       <div class="flex items-center gap-2">
@@ -94,14 +92,14 @@
       </div>
       <p class="text-xs text-slate-500">Autocompletado predictivo basado en patrones e historial</p>
     </div>
-    <form id="formAlta" class="p-5 grid grid-cols-1 md:grid-cols-12 gap-4" novalidate>
+    <form id="formAlta" class="p-5 grid grid-cols-1 md:grid-cols-12 gap-4" novalidate autocomplete="off">
       <div class="md:col-span-5 relative">
         <label class="block text-xs font-medium text-slate-600 mb-1">
           Ubicación de reserva <span class="text-purple-500">*</span>
         </label>
         <input type="text" id="ubReserva" autocomplete="off" maxlength="12"
           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
-          placeholder="Escribe ej: C 5...  (sugerencias aparecen abajo)">
+          placeholder="Escribe ej: C 5...">
         <div id="ac-ubReserva" class="ac-dropdown"></div>
         <p id="err-ubReserva" class="text-xs text-red-600 mt-1 hidden"></p>
       </div>
@@ -109,7 +107,7 @@
         <label class="block text-xs font-medium text-slate-600 mb-1">SKU / Clave</label>
         <input type="text" id="sku" autocomplete="off" maxlength="30"
           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
-          placeholder="Escribe ej: 208...  (sugerencias aparecen abajo)">
+          placeholder="Escribe ej: 208...">
         <div id="ac-sku" class="ac-dropdown"></div>
         <p id="err-sku" class="text-xs text-red-600 mt-1 hidden"></p>
       </div>
@@ -130,17 +128,15 @@
     </form>
   </section>
 
-  <!-- LEYENDA -->
   <section class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-xs text-blue-900">
     <p class="font-semibold mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Reglas de validación (basadas en el Excel):</p>
     <ul class="grid md:grid-cols-2 gap-2 list-disc list-inside">
       <li><b>Ubicación de reserva:</b> Letra(s) + espacio + 2 dígitos + código (ej: <code>C 57T1</code>, <code>M 12R1</code>, <code>E 37R5</code>, <code>DR38T2</code>)</li>
       <li><b>SKU:</b> Alfanumérico con <code>_ - . /</code> y sufijo opcional <code>PROMO</code> (ej: <code>00037_1</code>, <code>00375-79760</code>)</li>
     </ul>
-    <p class="mt-2 text-blue-700"><i class="fa-solid fa-lightbulb mr-1"></i>El autocompletado aprende de lo que registras + sugiere según el patrón del Excel.</p>
+    <p class="mt-2 text-blue-700"><i class="fa-solid fa-lightbulb mr-1"></i>El autocompletado aprende de lo que registras + sugiere según el patrón del Excel. Usa <kbd class="px-1 bg-white border rounded">↑</kbd> <kbd class="px-1 bg-white border rounded">↓</kbd> <kbd class="px-1 bg-white border rounded">Enter</kbd> o click.</p>
   </section>
 
-  <!-- FILTROS Y TABLA -->
   <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
     <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2">
@@ -253,7 +249,7 @@ const PREFIJOS_SKU = [
 ];
 
 /* =========================================================
-   ESTADO
+   ESTADO GLOBAL
    ========================================================= */
 let inventario = [];
 let deleteTargetId = null;
@@ -264,8 +260,7 @@ const saveState = () => { try{ localStorage.setItem('reservas_univ_sep2026', JSO
 const loadState = () => { try{ const r = localStorage.getItem('reservas_univ_sep2026'); if(r) inventario = JSON.parse(r)||[]; }catch(e){ inventario = []; } };
 
 /* =========================================================
-   MOTOR DE SUGERENCIAS PREDICTIVAS
-   Combina: historial + plantillas de patrón + prefijos del Excel
+   MOTOR DE SUGERENCIAS
    ========================================================= */
 function generarSugerencias(tipo, query) {
   const q = (query||'').trim().toUpperCase();
@@ -291,7 +286,7 @@ function generarSugerencias(tipo, query) {
     });
   }
 
-  // 3) Filtrar por query
+  // 3) Filtrar y ordenar
   let items = [...resultMap.entries()].map(([v,meta])=>({value:v, ...meta}));
   if(q){
     items = items.filter(it => it.value.toUpperCase().includes(q));
@@ -394,55 +389,7 @@ function setupAutocomplete(inputId, tipo) {
 }
 
 /* =========================================================
-   RENDER
-   ========================================================= */
-function render() {
-  const txt=$('filtroTexto').value.trim().toUpperCase();
-  const datos = inventario.filter(r=>{
-    if(txt){
-      const b=`${r.ubReserva} ${r.sku}`.toUpperCase();
-      return b.includes(txt);
-    }
-    return true;
-  });
-
-  const tbody=$('tbody');
-  tbody.innerHTML = datos.map(r=>`
-    <tr class="hover:bg-slate-50 transition">
-      <td class="px-4 py-3 font-medium text-purple-600">${r.ubReserva||'—'}</td>
-      <td class="px-4 py-3 font-mono text-xs">${r.sku||'—'}</td>
-      <td class="px-4 py-3 text-right font-medium">${r.cantidad}</td>
-      <td class="px-4 py-3 text-center">
-        <button onclick="askDelete('${r.id}')" class="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition" title="Dar de baja">
-          <i class="fa-solid fa-trash-can"></i>
-        </button>
-      </td>
-    </tr>
-  `).join('');
-
-  $('emptyState').style.display = datos.length===0 ? 'block':'none';
-
-  // Stats
-  const total=inventario.length;
-  const unidades = inventario.reduce((s,r)=>s+(r.cantidad||0), 0);
-  const skus = new Set(inventario.map(r=>r.sku).filter(Boolean)).size;
-  const ahora = Date.now();
-  const sieteDias = 7*24*60*60*1000;
-  const recientes = inventario.filter(r=>{
-    // Si no hay createdAt, usamos el id (timestamp base36)
-    const ts = r.createdAt || parseInt(r.id, 36);
-    return (ahora - ts) < sieteDias;
-  }).length;
-
-  $('statTotal').textContent=total;
-  $('statUnidades').textContent=unidades.toLocaleString('es-MX');
-  $('statSkus').textContent=skus;
-  $('statRecientes').textContent=recientes;
-  $('totalCount').textContent=total;
-}
-
-/* =========================================================
-   VALIDACIÓN EN TIEMPO REAL
+   VALIDACIÓN
    ========================================================= */
 function validateField(id){
   const el=$(id), err=$('err-'+id);
@@ -463,41 +410,53 @@ function validateField(id){
   return {ok:true};
 }
 
-['ubReserva','sku'].forEach(id=>{
-  $(id).addEventListener('blur',()=>validateField(id));
-});
+/* =========================================================
+   RENDER TABLA + STATS
+   ========================================================= */
+function render() {
+  const txt=$('filtroTexto').value.trim().toUpperCase();
+  const datos = inventario.filter(r=>{
+    if(!txt) return true;
+    const b=`${r.ubReserva} ${r.sku}`.toUpperCase();
+    return b.includes(txt);
+  });
+
+  const tbody=$('tbody');
+  tbody.innerHTML = datos.map(r=>`
+    <tr class="hover:bg-slate-50 transition">
+      <td class="px-4 py-3 font-medium text-purple-600">${r.ubReserva||'—'}</td>
+      <td class="px-4 py-3 font-mono text-xs">${r.sku||'—'}</td>
+      <td class="px-4 py-3 text-right font-medium">${r.cantidad}</td>
+      <td class="px-4 py-3 text-center">
+        <button onclick="askDelete('${r.id}')" class="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition" title="Dar de baja">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </td>
+    </tr>
+  `).join('');
+
+  $('emptyState').style.display = datos.length===0 ? 'block':'none';
+
+  const total=inventario.length;
+  const unidades = inventario.reduce((s,r)=>s+(Number(r.cantidad)||0), 0);
+  const skus = new Set(inventario.map(r=>r.sku).filter(Boolean)).size;
+  const ahora = Date.now();
+  const sieteDias = 7*24*60*60*1000;
+  const recientes = inventario.filter(r=>{
+    const ts = r.createdAt || parseInt(r.id, 36) || 0;
+    return (ahora - ts) < sieteDias;
+  }).length;
+
+  $('statTotal').textContent=total;
+  $('statUnidades').textContent=unidades.toLocaleString('es-MX');
+  $('statSkus').textContent=skus;
+  $('statRecientes').textContent=recientes;
+  $('totalCount').textContent=total;
+}
 
 /* =========================================================
    ALTA
    ========================================================= */
-$('formAlta').addEventListener('submit', e=>{
-  e.preventDefault();
-  const vR=validateField('ubReserva'), vS=validateField('sku');
-  const ubReserva=$('ubReserva').value.trim().toUpperCase();
-  const sku=$('sku').value.trim().toUpperCase();
-  const cantidad=parseInt($('cantidad').value)||0;
-
-  if(!ubReserva){ return msg('La Ubicación de reserva es obligatoria.','red'); }
-  if(!vR.ok || !vS.ok){ return msg('Corrige los campos marcados en rojo antes de guardar.','red'); }
-  if(cantidad<0){ return msg('La cantidad no puede ser negativa.','red'); }
-
-  const dup = inventario.some(r=>r.ubReserva===ubReserva && r.sku===sku);
-  if(dup){ return msg('Ya existe una reserva con esa Ubicación + SKU.','red'); }
-
-  inventario.push({
-    id: uid(),
-    createdAt: Date.now(),
-    ubReserva, sku, cantidad
-  });
-  saveState(); render();
-
-  ['ubReserva','sku'].forEach(id=>{
-    $(id).value=''; $(id).classList.remove('ok','err'); $('err-'+id).classList.add('hidden');
-  });
-  $('cantidad').value=0;
-  msg('✅ Reserva registrada correctamente.','green');
-});
-
 function msg(text,color){
   const el=$('formMsg');
   el.textContent=text;
@@ -514,3 +473,118 @@ function askDelete(id){
   deleteTargetId=id;
   $('deleteMsg').innerHTML=`¿Dar de baja la reserva <b>${r.ubReserva||''}</b>${r.sku?' con SKU <b>'+r.sku+'</b>':''}?`;
   $('deleteModal').classList.remove('hidden');
+  $('deleteModal').classList.add('flex');
+}
+function closeDeleteModal(){
+  $('deleteModal').classList.add('hidden');
+  $('deleteModal').classList.remove('flex');
+  deleteTargetId=null;
+}
+function confirmDelete(){
+  if(!deleteTargetId)return;
+  inventario=inventario.filter(x=>x.id!==deleteTargetId);
+  saveState(); render(); closeDeleteModal();
+}
+function limpiarTodo(){
+  if(inventario.length===0)return;
+  if(confirm('¿Vaciar por completo las reservas? Esta acción no se puede deshacer.')){
+    inventario=[]; saveState(); render();
+  }
+}
+
+/* =========================================================
+   EXPORT PROTEGIDO
+   ========================================================= */
+function openExportModal(){
+  if(inventario.length===0){ alert('No hay datos para exportar.'); return; }
+  $('exportPass').value=''; $('exportError').classList.add('hidden');
+  $('exportModal').classList.remove('hidden'); $('exportModal').classList.add('flex');
+  setTimeout(()=>$('exportPass').focus(),50);
+}
+function closeExportModal(){
+  $('exportModal').classList.add('hidden');
+  $('exportModal').classList.remove('flex');
+}
+function confirmExport(){
+  if($('exportPass').value!=='gafiojd'){ $('exportError').classList.remove('hidden'); return; }
+  closeExportModal(); exportXLSX();
+}
+function exportXLSX(){
+  const data=inventario.map(r=>({
+    'Ubicación de reserva': r.ubReserva,
+    'SKU': r.sku,
+    'Cantidad': r.cantidad
+  }));
+  const ws=XLSX.utils.json_to_sheet(data);
+  ws['!cols']=[{wch:22},{wch:20},{wch:10}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Reservas');
+  XLSX.writeFile(wb,`Universal_Reservas_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+/* =========================================================
+   INIT — se ejecuta al final para asegurar que todo el DOM exista
+   ========================================================= */
+document.addEventListener('DOMContentLoaded', function() {
+  loadState();
+  render();
+
+  // Setup autocompletado
+  setupAutocomplete('ubReserva', 'ubReserva');
+  setupAutocomplete('sku', 'sku');
+
+  // Validación al salir de cada campo
+  $('ubReserva').addEventListener('blur', ()=>validateField('ubReserva'));
+  $('sku').addEventListener('blur', ()=>validateField('sku'));
+
+  // Submit del form
+  $('formAlta').addEventListener('submit', e=>{
+    e.preventDefault();
+    const vR=validateField('ubReserva'), vS=validateField('sku');
+    const ubReserva=$('ubReserva').value.trim().toUpperCase();
+    const sku=$('sku').value.trim().toUpperCase();
+    const cantidad=parseInt($('cantidad').value)||0;
+
+    if(!ubReserva){ return msg('La Ubicación de reserva es obligatoria.','red'); }
+    if(!vR.ok || !vS.ok){ return msg('Corrige los campos marcados en rojo antes de guardar.','red'); }
+    if(cantidad<0){ return msg('La cantidad no puede ser negativa.','red'); }
+
+    const dup = inventario.some(r=>r.ubReserva===ubReserva && r.sku===sku);
+    if(dup){ return msg('Ya existe una reserva con esa Ubicación + SKU.','red'); }
+
+    inventario.push({
+      id: uid(),
+      createdAt: Date.now(),
+      ubReserva, sku, cantidad
+    });
+    saveState(); render();
+
+    ['ubReserva','sku'].forEach(id=>{
+      $(id).value=''; $(id).classList.remove('ok','err'); $('err-'+id).classList.add('hidden');
+    });
+    $('cantidad').value=0;
+    msg('✅ Reserva registrada correctamente.','green');
+  });
+
+  // Reset personalizado
+  $('formAlta').addEventListener('reset', ()=>{
+    setTimeout(()=>{
+      ['ubReserva','sku'].forEach(id=>{
+        $(id).classList.remove('ok','err'); $('err-'+id).classList.add('hidden');
+      });
+      $('formMsg').classList.add('hidden');
+    }, 10);
+  });
+
+  // Filtros
+  $('filtroTexto').addEventListener('input', render);
+
+  // ESC y Enter en modal export
+  document.addEventListener('keydown', e=>{
+    if(e.key==='Escape'){ closeExportModal(); closeDeleteModal(); }
+    if(e.key==='Enter' && !$('exportModal').classList.contains('hidden')) confirmExport();
+  });
+});
+</script>
+</body>
+</html>

@@ -20,13 +20,14 @@
     position:absolute;z-index:60;left:0;right:0;top:100%;margin-top:4px;
     background:#fff;border:1px solid #e2e8f0;border-radius:10px;
     box-shadow:0 10px 25px -5px rgba(0,0,0,.15);
-    max-height:240px;overflow-y:auto;display:none;
+    max-height:280px;overflow-y:auto;display:none;
   }
   .ac-dropdown.show{display:block}
   .ac-item{padding:8px 12px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center;transition:background .1s}
   .ac-item:hover,.ac-item.active{background:#eef2ff}
-  .ac-item .ac-code{font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#1e293b}
-  .ac-item .ac-tag{font-size:10px;padding:2px 6px;border-radius:9999px;background:#f1f5f9;color:#475569}
+  .ac-item .ac-code{font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#1e293b;font-size:12px}
+  .ac-item .ac-desc{font-size:11px;color:#64748b;flex:1;margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ac-item .ac-tag{font-size:10px;padding:2px 6px;border-radius:9999px;background:#f1f5f9;color:#475569;white-space:nowrap}
   .ac-item .ac-tag.hist{background:#dcfce7;color:#166534}
   .ac-item .ac-tag.pat{background:#ede9fe;color:#5b21b6}
   .ac-empty{padding:10px 12px;font-size:12px;color:#94a3b8;text-align:center}
@@ -57,6 +58,7 @@
 
 <main class="max-w-7xl mx-auto px-4 py-6">
 
+  <!-- STATS -->
   <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
       <div class="flex items-center justify-between">
@@ -72,28 +74,29 @@
     </div>
     <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
       <div class="flex items-center justify-between">
-        <div><p class="text-xs text-slate-500 font-medium uppercase">SKU únicos</p><p id="statSkus" class="text-2xl font-bold text-amber-600">0</p></div>
+        <div><p class="text-xs text-slate-500 font-medium uppercase">Alternos únicos</p><p id="statSkus" class="text-2xl font-bold text-amber-600">0</p></div>
         <div class="bg-amber-100 text-amber-600 p-2.5 rounded-lg"><i class="fa-solid fa-barcode"></i></div>
       </div>
     </div>
     <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
       <div class="flex items-center justify-between">
-        <div><p class="text-xs text-slate-500 font-medium uppercase">Recientes (7d)</p><p id="statRecientes" class="text-2xl font-bold text-purple-600">0</p></div>
-        <div class="bg-purple-100 text-purple-600 p-2.5 rounded-lg"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div><p class="text-xs text-slate-500 font-medium uppercase">Catálogo maestro</p><p id="statCatalogo" class="text-2xl font-bold text-purple-600">0</p></div>
+        <div class="bg-purple-100 text-purple-600 p-2.5 rounded-lg"><i class="fa-solid fa-book"></i></div>
       </div>
     </div>
   </section>
 
+  <!-- FORM ALTA -->
   <section class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
     <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
       <div class="flex items-center gap-2">
         <i class="fa-solid fa-plus-circle text-indigo-600"></i>
         <h2 class="font-semibold">Alta de Reserva</h2>
       </div>
-      <p class="text-xs text-slate-500">Autocompletado predictivo basado en patrones e historial</p>
+      <p class="text-xs text-slate-500">El Alterno debe existir en el catálogo maestro</p>
     </div>
     <form id="formAlta" class="p-5 grid grid-cols-1 md:grid-cols-12 gap-4" novalidate autocomplete="off">
-      <div class="md:col-span-5 relative">
+      <div class="md:col-span-6 relative">
         <label class="block text-xs font-medium text-slate-600 mb-1">
           Ubicación de reserva <span class="text-purple-500">*</span>
         </label>
@@ -103,19 +106,39 @@
         <div id="ac-ubReserva" class="ac-dropdown"></div>
         <p id="err-ubReserva" class="text-xs text-red-600 mt-1 hidden"></p>
       </div>
-      <div class="md:col-span-5 relative">
-        <label class="block text-xs font-medium text-slate-600 mb-1">SKU / Clave</label>
-        <input type="text" id="sku" autocomplete="off" maxlength="30"
+      <div class="md:col-span-6 relative">
+        <label class="block text-xs font-medium text-slate-600 mb-1">
+          Alterno <span class="text-purple-500">*</span>
+          <span class="text-slate-400 text-xs font-normal">(debe existir en catálogo)</span>
+        </label>
+        <input type="text" id="alterno" autocomplete="off" maxlength="30"
           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
-          placeholder="Escribe ej: 208...">
-        <div id="ac-sku" class="ac-dropdown"></div>
-        <p id="err-sku" class="text-xs text-red-600 mt-1 hidden"></p>
+          placeholder="Escribe ej: 208139 · 00037_1 · 00375-79760">
+        <div id="ac-alterno" class="ac-dropdown"></div>
+        <p id="err-alterno" class="text-xs text-red-600 mt-1 hidden"></p>
+      </div>
+
+      <div class="md:col-span-3">
+        <label class="block text-xs font-medium text-slate-600 mb-1">Corto <span class="text-slate-400 text-xs">(auto)</span></label>
+        <input type="text" id="corto" autocomplete="off" maxlength="30"
+          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+      </div>
+      <div class="md:col-span-3">
+        <label class="block text-xs font-medium text-slate-600 mb-1">Clave <span class="text-slate-400 text-xs">(auto)</span></label>
+        <input type="text" id="clave" autocomplete="off" maxlength="30"
+          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+      </div>
+      <div class="md:col-span-4">
+        <label class="block text-xs font-medium text-slate-600 mb-1">Artículo <span class="text-slate-400 text-xs">(auto)</span></label>
+        <input type="text" id="articulo" autocomplete="off" maxlength="120"
+          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
       </div>
       <div class="md:col-span-2">
         <label class="block text-xs font-medium text-slate-600 mb-1">Cant.</label>
         <input type="number" id="cantidad" min="0" value="0"
           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
       </div>
+
       <div class="md:col-span-12 flex flex-col sm:flex-row gap-2 items-stretch">
         <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
           <i class="fa-solid fa-floppy-disk"></i> Guardar reserva
@@ -128,15 +151,16 @@
     </form>
   </section>
 
+  <!-- LEYENDA -->
   <section class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-xs text-blue-900">
-    <p class="font-semibold mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Reglas de validación (basadas en el Excel):</p>
+    <p class="font-semibold mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Reglas de validación:</p>
     <ul class="grid md:grid-cols-2 gap-2 list-disc list-inside">
-      <li><b>Ubicación de reserva:</b> Letra(s) + espacio + 2 dígitos + código (ej: <code>C 57T1</code>, <code>M 12R1</code>, <code>E 37R5</code>, <code>DR38T2</code>)</li>
-      <li><b>SKU:</b> Alfanumérico con <code>_ - . /</code> y sufijo opcional <code>PROMO</code> (ej: <code>00037_1</code>, <code>00375-79760</code>)</li>
+      <li><b>Ubicación de reserva:</b> Letra(s) + espacio + 2 dígitos + código (ej: <code>C 57T1</code>, <code>M 12R1</code>, <code>E 37R5</code>)</li>
+      <li><b>Alterno:</b> Debe existir en el catálogo maestro del Excel. Al elegirlo se autocompletan <b>Corto</b>, <b>Clave</b> y <b>Artículo</b>.</li>
     </ul>
-    <p class="mt-2 text-blue-700"><i class="fa-solid fa-lightbulb mr-1"></i>El autocompletado aprende de lo que registras + sugiere según el patrón del Excel. Usa <kbd class="px-1 bg-white border rounded">↑</kbd> <kbd class="px-1 bg-white border rounded">↓</kbd> <kbd class="px-1 bg-white border rounded">Enter</kbd> o click.</p>
   </section>
 
+  <!-- TABLA -->
   <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
     <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2">
@@ -157,10 +181,13 @@
       <table class="w-full text-sm">
         <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
           <tr>
-            <th class="px-4 py-3 text-left font-medium">Ubicación de reserva</th>
-            <th class="px-4 py-3 text-left font-medium">SKU</th>
-            <th class="px-4 py-3 text-right font-medium">Cantidad</th>
-            <th class="px-4 py-3 text-center font-medium">Acciones</th>
+            <th class="px-3 py-3 text-left font-medium">Ubicación</th>
+            <th class="px-3 py-3 text-left font-medium">Corto</th>
+            <th class="px-3 py-3 text-left font-medium">Clave</th>
+            <th class="px-3 py-3 text-left font-medium">Alterno</th>
+            <th class="px-3 py-3 text-left font-medium">Artículo</th>
+            <th class="px-3 py-3 text-right font-medium">Cant.</th>
+            <th class="px-3 py-3 text-center font-medium">Acciones</th>
           </tr>
         </thead>
         <tbody id="tbody" class="divide-y divide-slate-100"></tbody>
@@ -175,7 +202,7 @@
 </main>
 
 <footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-slate-400">
-  Sistema de reservas · Patrones validados contra Universal_Septiembre_2026.xlsx
+  Sistema de reservas · Catálogo maestro embebido + reservas locales
 </footer>
 
 <!-- MODAL EXPORT -->
@@ -210,381 +237,97 @@
   </div>
 </div>
 
-<script>
-/* =========================================================
-   REGLAS EXTRAÍDAS DEL EXCEL UNIVERSAL_SEPT_2026
-   ========================================================= */
-const REGEX = {
-  ubReserva: /^[A-Z]{1,3}\s?\d{2}[A-Z]?\d*$/,
-  sku:       /^[A-Z0-9][A-Z0-9_\-\.\/ ]{2,25}(\sPROMO)?$/
-};
-
-const HINTS = {
-  ubReserva: 'Letra(s)+espacio+2 dígitos (ej: C 57T1, M 12R1, E 37R5)',
-  sku:       'Alfanumérico con _ - . (ej: 00037_1, 00375-79760)'
-};
-
-/* =========================================================
-   PLANTILLAS DERIVADAS DEL EXCEL (para autocompletado)
-   ========================================================= */
-const PREFIJOS_UB = [
-  "A A","A B","B 01","B 02","B 03","B 04","B 07","B 08","B 10","B 11","B 22","B 23","B 28","B 29","B 31","B 39",
-  "C 01","C 02","C 03","C 04","C 05","C 06","C 07","C 08","C 09","C 10","C 11","C 12","C 13","C 14","C 16","C 17","C 18","C 19","C 20","C 21","C 22","C 23","C 24","C 25","C 26","C 27","C 28","C 29","C 30","C 31","C 32","C 33","C 34","C 35","C 36","C 37","C 38","C 39","C 40","C 41","C 42","C 46","C 47","C 48","C 49","C 50","C 52","C 54","C 56","C 57","C 58","C 59","C 60","C 61",
-  "D 00","D 01","D 02","D 03","D 04","D 05","D 06","D 07","D 08","D 09","D 10","D 11","D 13","D 14","D 15","D 16","D 18",
-  "DR01","DR03","DR06","DR09","DR14","DR15","DR16","DR17","DR18","DR20","DR22","DR23","DR24","DR25","DR26","DR27","DR28","DR29","DR30","DR31","DR32","DR33","DR34","DR35","DR36","DR37","DR38","DR39","DR40","DR41","DR42","DR43","DR46","DR47","DR48","DR50","DR52","DR56","DR62","DR64","DR66","DR68","DR70","DR71","DR72","DR73","DR74","DR75","DR76","DR77","DR78","DR79","DR80","DR81","DR82","DR83","DR84","DR85","DR86","DR87","DR90",
-  "E 01","E 02","E 06","E 07","E 08","E 10","E 11","E 12","E 13","E 14","E 16","E 17","E 18","E 19","E 20","E 21","E 22","E 23","E 25","E 26","E 29","E 30","E 31","E 33","E 35","E 37","E 40","E 42","E 44","E 45","E 47","E 48",
-  "E 70","E 71","E 72","E 73","E 74","E 75","E 76","E 77","E 78"
-];
-const SUFIJOS_UB = ["T1","T2","T3","T4","T5","T6","T7","R1","R2","R3","R4","R5","R6","R7","R8"];
-
-const PREFIJOS_SKU = [
-  "00037_1","00038_1","00040_1","00042_1","00044_1","00046_1","00047_1","00048_1","00049_1","00051_1","00052_1","00053_1","00054_1","00055_1","00058_1","00059_1","00060_1","00084_1","00085_1","00086_1","00089_1",
-  "00375-79760","00731-79755","00881-79775","00882-79776","00883-79777","00885-79779","00886-79780","00887-79781","00999-79768",
-  "0100017","0150101","0150105","0150110","0150111","0150112","0150115","0150118","0150014","0150015","0150016","0150019","0150020","0150022","0150023","0150029","0150071","0150072","0150075","0150079","0150080","0150083","0150084","0150085","0150089","0150091","0150092","0150094","0150181","0150183","0150189","0150195","0150201","0150208","0150249","0150250","0150251","0150252","0150253",
-  "0200001","0200002","0200004","0200005","0200006","0200008","0200009","0200011","0200015","0200016",
-  "0290016","0290042","0290054","0290010","0290011","0290012","0290013","0290017",
-  "0310110","0320012","0320013","0320014","0340043","0340044","0340045","0340047","0340048","0340058","0340060","0340012","0340013","0340014","0340015","0340016","0340017","0340019","0340020","0340021","0340022","0340023","0340024","0340025","0340026","0340027","0340029","0340030","0340031","0340032","0340033","0340034","0340035","0340036","0340037","0340039","0340040","0340041",
-  "04159-79759","0420013","0420014","0420015","0420018","0420026","0420027","0420028","0420029","0420030","0420035",
-  "050-1976","050-2167","050-2168","050-2169"
-];
-
-/* =========================================================
-   ESTADO GLOBAL
-   ========================================================= */
-let inventario = [];
-let deleteTargetId = null;
-
-const $ = id => document.getElementById(id);
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-const saveState = () => { try{ localStorage.setItem('reservas_univ_sep2026', JSON.stringify(inventario)); }catch(e){} };
-const loadState = () => { try{ const r = localStorage.getItem('reservas_univ_sep2026'); if(r) inventario = JSON.parse(r)||[]; }catch(e){ inventario = []; } };
-
-/* =========================================================
-   MOTOR DE SUGERENCIAS
-   ========================================================= */
-function generarSugerencias(tipo, query) {
-  const q = (query||'').trim().toUpperCase();
-  const resultMap = new Map();
-
-  // 1) HISTORIAL
-  inventario.forEach(r=>{
-    const v = tipo==='ubReserva' ? r.ubReserva : r.sku;
-    if(v) resultMap.set(v, {tag:'hist', label:'historial'});
-  });
-
-  // 2) PLANTILLAS del Excel
-  if(tipo==='ubReserva'){
-    PREFIJOS_UB.forEach(p=>{
-      SUFIJOS_UB.forEach(s=>{
-        const v = `${p}${s}`;
-        if(!resultMap.has(v)) resultMap.set(v, {tag:'pat', label:'patrón'});
-      });
-    });
-  } else if(tipo==='sku'){
-    PREFIJOS_SKU.forEach(p=>{
-      if(!resultMap.has(p)) resultMap.set(p, {tag:'pat', label:'patrón'});
-    });
-  }
-
-  // 3) Filtrar y ordenar
-  let items = [...resultMap.entries()].map(([v,meta])=>({value:v, ...meta}));
-  if(q){
-    items = items.filter(it => it.value.toUpperCase().includes(q));
-    items.sort((a,b)=>{
-      const aStart = a.value.toUpperCase().startsWith(q) ? 0 : 1;
-      const bStart = b.value.toUpperCase().startsWith(q) ? 0 : 1;
-      if(aStart!==bStart) return aStart-bStart;
-      if(a.tag!==b.tag) return a.tag==='hist'?-1:1;
-      return a.value.localeCompare(b.value);
-    });
-  } else {
-    items.sort((a,b)=>{
-      if(a.tag!==b.tag) return a.tag==='hist'?-1:1;
-      return a.value.localeCompare(b.value);
-    });
-  }
-  return items.slice(0, 12);
-}
-
-/* =========================================================
-   AUTOCOMPLETADO CUSTOM
-   ========================================================= */
-function setupAutocomplete(inputId, tipo) {
-  const input = $(inputId);
-  const dropdown = $('ac-'+inputId);
-  let activeIndex = -1;
-  let currentItems = [];
-
-  function closeDropdown(){
-    dropdown.classList.remove('show');
-    dropdown.innerHTML = '';
-    activeIndex = -1;
-    currentItems = [];
-  }
-
-  function renderDropdown(){
-    if(currentItems.length===0){
-      dropdown.innerHTML = '<div class="ac-empty">Sin sugerencias. Sigue escribiendo…</div>';
-      dropdown.classList.add('show');
-      return;
-    }
-    dropdown.innerHTML = currentItems.map((it, i)=>`
-      <div class="ac-item ${i===activeIndex?'active':''}" data-idx="${i}">
-        <span class="ac-code">${it.value}</span>
-        <span class="ac-tag ${it.tag==='hist'?'hist':'pat'}">${it.label}</span>
-      </div>
-    `).join('');
-    dropdown.classList.add('show');
-  }
-
-  input.addEventListener('input', ()=>{
-    currentItems = generarSugerencias(tipo, input.value.trim());
-    activeIndex = -1;
-    renderDropdown();
-  });
-
-  input.addEventListener('focus', ()=>{
-    currentItems = generarSugerencias(tipo, input.value.trim());
-    activeIndex = -1;
-    renderDropdown();
-  });
-
-  input.addEventListener('keydown', (e)=>{
-    if(!dropdown.classList.contains('show')) return;
-    if(e.key==='ArrowDown'){
-      e.preventDefault();
-      activeIndex = Math.min(activeIndex+1, currentItems.length-1);
-      renderDropdown();
-    } else if(e.key==='ArrowUp'){
-      e.preventDefault();
-      activeIndex = Math.max(activeIndex-1, -1);
-      renderDropdown();
-    } else if(e.key==='Enter'){
-      if(activeIndex >= 0 && currentItems[activeIndex]){
-        e.preventDefault();
-        input.value = currentItems[activeIndex].value;
-        closeDropdown();
-        validateField(inputId);
-      }
-    } else if(e.key==='Escape'){
-      closeDropdown();
-    }
-  });
-
-  dropdown.addEventListener('mousedown', (e)=>{
-    const item = e.target.closest('.ac-item');
-    if(!item) return;
-    e.preventDefault();
-    const idx = parseInt(item.dataset.idx, 10);
-    if(currentItems[idx]){
-      input.value = currentItems[idx].value;
-      closeDropdown();
-      validateField(inputId);
-    }
-  });
-
-  input.addEventListener('blur', ()=>{
-    setTimeout(closeDropdown, 150);
-  });
-}
-
-/* =========================================================
-   VALIDACIÓN
-   ========================================================= */
-function validateField(id){
-  const el=$(id), err=$('err-'+id);
-  const val=el.value.trim().toUpperCase();
-  el.value=val;
-  if(val===''){
-    el.classList.remove('err','ok'); err.classList.add('hidden');
-    return {ok:true, empty:true};
-  }
-  if(!REGEX[id].test(val)){
-    el.classList.add('err'); el.classList.remove('ok');
-    err.textContent='Formato inválido. Esperado: '+HINTS[id];
-    err.classList.remove('hidden');
-    return {ok:false};
-  }
-  el.classList.remove('err'); el.classList.add('ok');
-  err.classList.add('hidden');
-  return {ok:true};
-}
-
-/* =========================================================
-   RENDER TABLA + STATS
-   ========================================================= */
-function render() {
-  const txt=$('filtroTexto').value.trim().toUpperCase();
-  const datos = inventario.filter(r=>{
-    if(!txt) return true;
-    const b=`${r.ubReserva} ${r.sku}`.toUpperCase();
-    return b.includes(txt);
-  });
-
-  const tbody=$('tbody');
-  tbody.innerHTML = datos.map(r=>`
-    <tr class="hover:bg-slate-50 transition">
-      <td class="px-4 py-3 font-medium text-purple-600">${r.ubReserva||'—'}</td>
-      <td class="px-4 py-3 font-mono text-xs">${r.sku||'—'}</td>
-      <td class="px-4 py-3 text-right font-medium">${r.cantidad}</td>
-      <td class="px-4 py-3 text-center">
-        <button onclick="askDelete('${r.id}')" class="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition" title="Dar de baja">
-          <i class="fa-solid fa-trash-can"></i>
-        </button>
-      </td>
-    </tr>
-  `).join('');
-
-  $('emptyState').style.display = datos.length===0 ? 'block':'none';
-
-  const total=inventario.length;
-  const unidades = inventario.reduce((s,r)=>s+(Number(r.cantidad)||0), 0);
-  const skus = new Set(inventario.map(r=>r.sku).filter(Boolean)).size;
-  const ahora = Date.now();
-  const sieteDias = 7*24*60*60*1000;
-  const recientes = inventario.filter(r=>{
-    const ts = r.createdAt || parseInt(r.id, 36) || 0;
-    return (ahora - ts) < sieteDias;
-  }).length;
-
-  $('statTotal').textContent=total;
-  $('statUnidades').textContent=unidades.toLocaleString('es-MX');
-  $('statSkus').textContent=skus;
-  $('statRecientes').textContent=recientes;
-  $('totalCount').textContent=total;
-}
-
-/* =========================================================
-   ALTA
-   ========================================================= */
-function msg(text,color){
-  const el=$('formMsg');
-  el.textContent=text;
-  el.className='md:col-span-12 text-sm '+(color==='red'?'text-red-600':'text-emerald-600');
-  el.classList.remove('hidden');
-  setTimeout(()=>el.classList.add('hidden'),3500);
-}
-
-/* =========================================================
-   BAJA
-   ========================================================= */
-function askDelete(id){
-  const r=inventario.find(x=>x.id===id); if(!r)return;
-  deleteTargetId=id;
-  $('deleteMsg').innerHTML=`¿Dar de baja la reserva <b>${r.ubReserva||''}</b>${r.sku?' con SKU <b>'+r.sku+'</b>':''}?`;
-  $('deleteModal').classList.remove('hidden');
-  $('deleteModal').classList.add('flex');
-}
-function closeDeleteModal(){
-  $('deleteModal').classList.add('hidden');
-  $('deleteModal').classList.remove('flex');
-  deleteTargetId=null;
-}
-function confirmDelete(){
-  if(!deleteTargetId)return;
-  inventario=inventario.filter(x=>x.id!==deleteTargetId);
-  saveState(); render(); closeDeleteModal();
-}
-function limpiarTodo(){
-  if(inventario.length===0)return;
-  if(confirm('¿Vaciar por completo las reservas? Esta acción no se puede deshacer.')){
-    inventario=[]; saveState(); render();
-  }
-}
-
-/* =========================================================
-   EXPORT PROTEGIDO
-   ========================================================= */
-function openExportModal(){
-  if(inventario.length===0){ alert('No hay datos para exportar.'); return; }
-  $('exportPass').value=''; $('exportError').classList.add('hidden');
-  $('exportModal').classList.remove('hidden'); $('exportModal').classList.add('flex');
-  setTimeout(()=>$('exportPass').focus(),50);
-}
-function closeExportModal(){
-  $('exportModal').classList.add('hidden');
-  $('exportModal').classList.remove('flex');
-}
-function confirmExport(){
-  if($('exportPass').value!=='gafiojd'){ $('exportError').classList.remove('hidden'); return; }
-  closeExportModal(); exportXLSX();
-}
-function exportXLSX(){
-  const data=inventario.map(r=>({
-    'Ubicación de reserva': r.ubReserva,
-    'SKU': r.sku,
-    'Cantidad': r.cantidad
-  }));
-  const ws=XLSX.utils.json_to_sheet(data);
-  ws['!cols']=[{wch:22},{wch:20},{wch:10}];
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Reservas');
-  XLSX.writeFile(wb,`Universal_Reservas_${new Date().toISOString().slice(0,10)}.xlsx`);
-}
-
-/* =========================================================
-   INIT — se ejecuta al final para asegurar que todo el DOM exista
-   ========================================================= */
-document.addEventListener('DOMContentLoaded', function() {
-  loadState();
-  render();
-
-  // Setup autocompletado
-  setupAutocomplete('ubReserva', 'ubReserva');
-  setupAutocomplete('sku', 'sku');
-
-  // Validación al salir de cada campo
-  $('ubReserva').addEventListener('blur', ()=>validateField('ubReserva'));
-  $('sku').addEventListener('blur', ()=>validateField('sku'));
-
-  // Submit del form
-  $('formAlta').addEventListener('submit', e=>{
-    e.preventDefault();
-    const vR=validateField('ubReserva'), vS=validateField('sku');
-    const ubReserva=$('ubReserva').value.trim().toUpperCase();
-    const sku=$('sku').value.trim().toUpperCase();
-    const cantidad=parseInt($('cantidad').value)||0;
-
-    if(!ubReserva){ return msg('La Ubicación de reserva es obligatoria.','red'); }
-    if(!vR.ok || !vS.ok){ return msg('Corrige los campos marcados en rojo antes de guardar.','red'); }
-    if(cantidad<0){ return msg('La cantidad no puede ser negativa.','red'); }
-
-    const dup = inventario.some(r=>r.ubReserva===ubReserva && r.sku===sku);
-    if(dup){ return msg('Ya existe una reserva con esa Ubicación + SKU.','red'); }
-
-    inventario.push({
-      id: uid(),
-      createdAt: Date.now(),
-      ubReserva, sku, cantidad
-    });
-    saveState(); render();
-
-    ['ubReserva','sku'].forEach(id=>{
-      $(id).value=''; $(id).classList.remove('ok','err'); $('err-'+id).classList.add('hidden');
-    });
-    $('cantidad').value=0;
-    msg('✅ Reserva registrada correctamente.','green');
-  });
-
-  // Reset personalizado
-  $('formAlta').addEventListener('reset', ()=>{
-    setTimeout(()=>{
-      ['ubReserva','sku'].forEach(id=>{
-        $(id).classList.remove('ok','err'); $('err-'+id).classList.add('hidden');
-      });
-      $('formMsg').classList.add('hidden');
-    }, 10);
-  });
-
-  // Filtros
-  $('filtroTexto').addEventListener('input', render);
-
-  // ESC y Enter en modal export
-  document.addEventListener('keydown', e=>{
-    if(e.key==='Escape'){ closeExportModal(); closeDeleteModal(); }
-    if(e.key==='Enter' && !$('exportModal').classList.contains('hidden')) confirmExport();
-  });
-});
-</script>
-</body>
-</html>
+<!-- =========================================================
+     BASE DE DATOS MAESTRA (Catálogo del Excel embebido)
+     ---------------------------------------------------------
+     Formato compacto: {c: corto, k: clave, a: alterno, d: artículo}
+     Este bloque NO lo modifica el usuario final.
+     Para ampliarlo, reemplaza el JSON por uno nuevo generado
+     desde el Excel.
+     ========================================================= -->
+<script id="catalogoMaestro" type="application/json">
+[
+  {"c":"208139","k":"00001","a":"00001","d":"Exhibidor d/lijas 00001 fandeli"},
+  {"c":"7665","k":"0150005","a":"000010101","d":"Accesorios blanco Jazmin Cato"},
+  {"c":"7668","k":"0150008","a":"000010501","d":"Accesorios marfil Jazmin Cato"},
+  {"c":"7663","k":"0150003","a":"000010701","d":"Accesorios azul holanda Jazmin Cato"},
+  {"c":"7667","k":"0150007","a":"000011101","d":"Accesorios gris platino Jazmin Cato"},
+  {"c":"7664","k":"0150004","a":"000011801","d":"Accesorios beige Jazmin Cato"},
+  {"c":"16287","k":"000102","a":"000102","d":"Accesorios verde ecologico Jazmin Cato"},
+  {"c":"167","k":"0150011","a":"0001121","d":"Accesorios verde jade Jazmin Cato"},
+  {"c":"234399","k":"00037_1","a":"00037_1","d":"Lija negra agua a 99 220 9x11 c/50pz Fandeli"},
+  {"c":"234400","k":"00038_1","a":"00038_1","d":"Lija negra agua a 99 240 9x11 c/50pz Fandeli"},
+  {"c":"4119","k":"1300051","a":"00039","d":"Lija negra agua a 99 280 9x11 fandeli"},
+  {"c":"234401","k":"00040_1","a":"00040_1","d":"Lija negra agua a 99 320 9x11 c/50pz Fandeli"},
+  {"c":"4121","k":"1300050","a":"00041","d":"Lija negra agua a 99 360 9x11 fandeli"},
+  {"c":"234402","k":"00042_1","a":"00042_1","d":"Lija negra agua a 99 400 9x11 c/50pz Fandeli"},
+  {"c":"191094","k":"43","a":"00043","d":"Lija negra agua a 99 500 9x11 fandeli"},
+  {"c":"234403","k":"00044_1","a":"00044_1","d":"Lija negra agua a 99 600 9x11 c/50pz Fandeli"},
+  {"c":"234404","k":"00046_1","a":"00046_1","d":"Lija cafe p/madera c081 100 9x11 c/50pz Fandeli"},
+  {"c":"234405","k":"00047_1","a":"00047_1","d":"Lija cafe p/madera c081 120 9x11 c/50pz Fandeli"},
+  {"c":"234406","k":"00048_1","a":"00048_1","d":"Lija negra agua b 99 1200 9x11 c/25pz Fandeli"},
+  {"c":"234407","k":"00049_1","a":"00049_1","d":"Lija negra agua b 99 1500 9x11 c/25pz Fandeli"},
+  {"c":"234408","k":"00051_1","a":"00051_1","d":"Lija negra agua c 99 80 9x11 c/50pz Fandeli"},
+  {"c":"234409","k":"00052_1","a":"00052_1","d":"Lija negra agua c 99 100 9x11 c/50pz Fandeli"},
+  {"c":"234410","k":"00053_1","a":"00053_1","d":"Lija negra agua c 99 120 9x11 c/50pz Fandeli"},
+  {"c":"234411","k":"00054_1","a":"00054_1","d":"Lija negra agua c 99 150 9x11 c/50pz Fandeli"},
+  {"c":"234412","k":"00055_1","a":"00055_1","d":"Lija negra agua c 99 180 9x11 c/50pz Fandeli"},
+  {"c":"234413","k":"00058_1","a":"00058_1","d":"Lija cafe p/madera d081 050 9x11 c/25pz Fandeli"},
+  {"c":"234414","k":"00059_1","a":"00059_1","d":"Lija cafe p/madera d081 060 9x11 c/25pz Fandeli"},
+  {"c":"234415","k":"00060_1","a":"00060_1","d":"Lija cafe p/madera d081 080 9x11 c/50pz Fandeli"},
+  {"c":"4142","k":"1300013","a":"00073","d":"Lija roja oxialum j 86 080 9x11 metal/madera fandeli"},
+  {"c":"12529","k":"1300069","a":"00074","d":"Lija roja oxialum j 86 100 9x11 metal/madera fandeli"},
+  {"c":"4141","k":"1300014","a":"00075","d":"Lija roja oxialum j 86 120 9x11 metal/madera fandeli"},
+  {"c":"201901","k":"00076","a":"00076","d":"Lija roja oxialum j 86 150 9x11 metal/madera fandeli"},
+  {"c":"201902","k":"00077","a":"00077","d":"Lija roja oxialum j 86 180 9x11 metal/madera fandeli"},
+  {"c":"198747","k":"00078","a":"00078","d":"Lija roja oxialum j 86 220 9x11 metal/madera fandeli"},
+  {"c":"279708","k":"00079","a":"00079","d":"Lija roja oxialum j 86 240 9x11 metal/madera Fandeli"},
+  {"c":"238138","k":"00080","a":"00080","d":"Lija roja oxialum j 86 280 9x11 metal/madera Fandeli"},
+  {"c":"207183","k":"00081","a":"00081","d":"Lija roja oxialum j 86 320 9x11 metal/madera fandeli"},
+  {"c":"234423","k":"00084_1","a":"00084_1","d":"Lija naranja econ p/madera k 61 fino 9x11 c/50pz Fandeli"},
+  {"c":"234424","k":"00085_1","a":"00085_1","d":"Lija naranja econ p/madera k 61 grueso 9x11 c/25pz Fandeli"},
+  {"c":"234425","k":"00086_1","a":"00086_1","d":"Lija naranja econ p/madera k 61 mediano 9x11 c/50pz Fandeli"},
+  {"c":"4143","k":"1300012","a":"00089","d":"Lija roja oxialum x 86 36 9x11 metal/madera fandeli"},
+  {"c":"191092","k":"90","a":"00090","d":"Lija roja oxialum x 86 40 9x11 p/tela fandeli"},
+  {"c":"191093","k":"91","a":"00091","d":"Lija roja oxialum x 86 50 9x11 p/tela fandeli"},
+  {"c":"4144","k":"1300057","a":"00092","d":"Lija roja oxialum x 86 60 9x11 metal/madera fandeli"},
+  {"c":"192248","k":"00191","a":"00191","d":"Banda de lija x 86 100 4x24 fandeli"},
+  {"c":"288292","k":"001E","a":"001E","d":"Carton c/30 kits reparacion cuello ganso freg a.fria Hulcen"},
+  {"c":"4011","k":"00375-79760","a":"00375-79760","d":"Disco lija g 88 41/2 36 fandeli"},
+  {"c":"213488","k":"00388-79770","a":"00388-79770","d":"Disco lija g 88 5 060 fandeli"},
+  {"c":"213489","k":"00389-79771","a":"00389-79771","d":"Disco lija g 88 5 080 fandeli"},
+  {"c":"213490","k":"00390-79772","a":"00390-79772","d":"Disco lija g 88 5 100 fandeli"},
+  {"c":"213491","k":"00391-79773","a":"00391-79773","d":"Disco lija g 88 5 120 fandeli"},
+  {"c":"288294","k":"005E","a":"005E","d":"Carton c/30 kits reparacion cartucho lav a.fria Hulcen"},
+  {"c":"280790","k":"006","a":"006","d":"Cuchara p/albañil p/detallar # 06 Celta"},
+  {"c":"288293","k":"006E","a":"006E","d":"Carton c/30 kits reparacion llave nariz a.fria Hulcen"},
+  {"c":"280795","k":"006L","a":"006L","d":"Cuchara p/albañil t/filadelfia # 06 m/mad 006L Lince Celta"},
+  {"c":"191100","k":"00731-79755","a":"00731-79755","d":"Disco lija g 88 4 5/8 80 fandeli"},
+  {"c":"214409","k":"00778","a":"00778","d":"Lija negra agua c 99 60 9x11 fandeli"},
+  {"c":"234428","k":"00780_1","a":"00780_1","d":"Lija cafe p/madera c081 150 9x11 c/50pz Fandeli"},
+  {"c":"288295","k":"007E","a":"007E","d":"Carton c/30 kits reparacion cartucho reg a.fria Hulcen"},
+  {"c":"4014","k":"00881-79775","a":"00881-79775","d":"Disco lija g 88 7 24 fandeli"},
+  {"c":"4015","k":"00882-79776","a":"00882-79776","d":"Disco lija g 88 7 36 fandeli"},
+  {"c":"196886","k":"00883-79777","a":"00883-79777","d":"Disco lija g 88 7 50 fandeli"},
+  {"c":"4016","k":"00885-79779","a":"00885-79779","d":"Disco lija g 88 7 80 fandeli"},
+  {"c":"196888","k":"00886-79780","a":"00886-79780","d":"Disco lija g 88 7 100 fandeli"},
+  {"c":"4013","k":"00887-79781","a":"00887-79781","d":"Disco lija g 88 7 120 fandeli"},
+  {"c":"280796","k":"009","a":"009","d":"Cuchara p/albañil t/filadelfia # 09 Celta"},
+  {"c":"197644","k":"00999-79768","a":"00999-79768","d":"Disco lija g 88 5 36 fandeli"},
+  {"c":"280797","k":"009L","a":"009L","d":"Cuchara p/albañil t/filadelfia # 09 m/mad 009L Lince Celta"},
+  {"c":"280791","k":"010","a":"010","d":"Cuchara p/albañil t/filadelfia # 10 Celta"},
+  {"c":"7681","k":"0100017","a":"0100017","d":"Asiento para sanitario alargado blanco Beta"},
+  {"c":"7680","k":"0100021","a":"0100021","d":"Asiento para sanitario alargado beige Beta"},
+  {"c":"7846","k":"0150118","a":"010010321","d":"Taza redonda rosa Jazmin Cato"},
+  {"c":"12543","k":"0150252","a":"010010521","d":"Taza redonda marfil 3.8lts Jazmin Cato"},
+  {"c":"7840","k":"0150111","a":"010010721","d":"Taza redonda azul holanda Jazmin Cato"},
+  {"c":"7844","k":"0150115","a":"010011121","d":"Taza redonda gris platino Jazmin Cato"},
+  {"c":"7841","k":"0150112","a":"010011821","d":"Taza redonda beige Jazmin Cato"},
+  {"c":"194785","k":"SC224","a":"010160111","d":"Taza redonda blanca 4.8lts Aguazul Cato"},
+  {"c":"194786","k":"SC225","a":"010160511","d":"Taza redonda marfil 4.8lts Aguazul Cato"},
+  {"c":"238215","k":"0102/N","a":"0102","d":"Termo 01gal/3.8lt mod. Explorer varios colores NYC"},
+  {"c":"288932","k":"CXMAN0912","a":"01040","d":"Cubierta p/mtto proteccion contra derrames 1ton Cluxer"},
+  {"c":"288933","k":"CXMAN1824","a":"01041","d":"Cubierta p/mtto proteccion contra derrames 1.5 a 2ton Cluxer"},
+  {"c":"280792","k":"010L","a":"010L","d":"Cuchara p/albañil t/filadelfia # 10 m/mad 010L Lince Celta"},
+  {"c":"280793","k":"011_1","a":"011_1","d":"Cuchara p/albañil t/filadelfia # 11 Celta"},
+  {"c":"280794","k":"011L","a":"011L","d":"Cuchara p/albañil t/filadelfia # 11 m

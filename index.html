@@ -167,6 +167,21 @@
     .tbl td{padding:14px 12px}
     .tbl th{padding:12px}
   }
+
+  /* ===== Encabezado de la página más compacto ===== */
+  body main.max-w-6xl{padding-top:18px;padding-bottom:24px}
+  main > section:first-of-type{margin-bottom:14px;gap:12px;align-items:center}
+  main > section:first-of-type h2{font-size:clamp(20px,4.5vw,24px);letter-spacing:-.02em;line-height:1.15}
+  main > section:first-of-type .intro-desc{font-size:13px;line-height:1.35;margin-top:2px;max-width:30rem}
+  main > section:first-of-type .stat{padding:7px 14px;min-width:0;border-radius:12px}
+  main > section:first-of-type .stat-n{font-size:19px}
+  main > section:first-of-type .stat-l{font-size:11.5px;margin-top:0}
+  nav.seg{margin-bottom:16px}
+  @media(max-width:639px){
+    .intro-desc{display:none}
+    body main.max-w-6xl{padding-top:14px}
+    main > section:first-of-type{margin-bottom:12px}
+  }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -199,7 +214,7 @@
   <section class="flex flex-wrap items-end justify-between gap-5 mb-6">
     <div>
       <h2 class="text-[28px] leading-tight font-bold tracking-tight">Reservas de almacén</h2>
-      <p class="text-slate-500 mt-1 max-w-md">Registra en qué ubicación queda guardado cada artículo en reserva y consúltalo cuando lo necesites.</p>
+      <p class="intro-desc text-slate-500 mt-1 max-w-md">Registra en qué ubicación queda guardado cada artículo en reserva y consúltalo cuando lo necesites.</p>
     </div>
     <div class="flex gap-3">
       <div class="stat"><span class="stat-n" id="statTotal">0</span><span class="stat-l">Reservas</span></div>

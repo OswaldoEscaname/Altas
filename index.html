@@ -6,217 +6,268 @@
 <title>Gestión de Reservas · Universal Sept 2026</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  *{font-family:'Inter',sans-serif}
-  .fade-in{animation:fadeIn .2s ease-in-out}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-  .err{border-color:#ef4444!important;background:#fef2f2!important}
-  .ok{border-color:#22c55e!important;background:#f0fdf4!important}
-  ::-webkit-scrollbar{width:8px;height:8px}
-  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
-  .ac-dropdown{position:absolute;z-index:60;left:0;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 10px 25px -5px rgba(0,0,0,.15);max-height:280px;overflow-y:auto;display:none}
+  :root{--ink:#0F172A;--ink2:#1E293B;--muted:#64748B;--line:#E4E8EE;--canvas:#F3F5F8;--amber:#F5B301;--amber-soft:#FFF7DB;--amber-line:#F1D36B;--bad:#DC2626}
+  *{box-sizing:border-box}
+  body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--canvas);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(900px 420px at 88% -8%,rgba(245,179,1,.16),transparent 60%),radial-gradient(760px 420px at -8% 0,rgba(59,91,255,.08),transparent 60%)}
+  .mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+  .bb{border-bottom:1px solid var(--line)}
+
+  .topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.82);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
+  .logo{width:42px;height:42px;border-radius:13px;background:var(--ink);color:var(--amber);display:grid;place-items:center;flex:none}
+  .pill{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:12.5px;font-weight:600}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 18px;border-radius:12px;font-weight:600;font-size:14px;border:1px solid transparent;transition:background .15s,box-shadow .15s,transform .05s;cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#000;box-shadow:0 8px 18px -8px rgba(15,23,42,.6)}
+  .btn-ghost{background:#fff;border-color:var(--line);color:var(--ink2)}
+  .btn-ghost:hover{background:#F8FAFC}
+  .btn-danger{background:var(--bad);color:#fff}
+  .btn-danger:hover{background:#B91C1C}
+  .btn-soft-danger{background:#fff;border-color:#FECACA;color:#B91C1C}
+  .btn-soft-danger:hover{background:#FEF2F2}
+  .btn:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
+  .icon-btn{width:36px;height:36px;border-radius:10px;display:inline-grid;place-items:center;color:var(--muted);transition:background .15s,color .15s;cursor:pointer}
+  .icon-btn:hover{background:#FEE2E2;color:#B91C1C}
+  button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 12px 28px -16px rgba(15,23,42,.14)}
+  .card-b{padding:24px}
+  .split{display:grid;gap:24px}
+  @media(min-width:1024px){.split{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+
+  .stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 18px;min-width:132px}
+  .stat-n{display:block;font-size:26px;line-height:1.1;font-weight:700;letter-spacing:-.02em}
+  .stat-l{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+
+  .seg{display:inline-flex;padding:4px;background:#E6EAF0;border-radius:14px;gap:4px}
+  .seg-btn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted);transition:background .15s,color .15s;cursor:pointer}
+  .seg-btn:hover{color:var(--ink)}
+  .seg-btn.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(15,23,42,.14)}
+  .seg-count{font-size:11px;background:var(--ink);color:#fff;border-radius:999px;padding:1px 8px}
+
+  .label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--ink2)}
+  .label small{font-weight:500;color:var(--muted)}
+  .field{width:100%;height:48px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:0 14px;font-size:15px;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
+  .field::placeholder{color:#A3AEBF}
+  .field:focus{border-color:var(--ink);box-shadow:0 0 0 4px rgba(245,179,1,.35)}
+  .field.err{border-color:var(--bad);background:#FEF6F6;box-shadow:0 0 0 4px rgba(220,38,38,.10)}
+  .field.ok{border-color:#86D1B0}
+  .field-code{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:600;letter-spacing:.03em;font-size:16px}
+  select.field{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+
+  .ficha{background:#F8FAFC;border-radius:16px;padding:4px 18px}
+  .ficha-row{padding:13px 0;border-bottom:1px dashed #DDE3EB}
+  .ficha-row:last-child{border-bottom:0}
+  .ficha-k{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:3px}
+  .ficha-v{display:block;width:100%;background:transparent;border:0;outline:none;font-size:15px;font-weight:600;color:var(--ink);padding:0;resize:none;cursor:default;font-family:inherit}
+  .ficha-v::placeholder{color:#C3CCD8}
+
+  .banner{border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500}
+  .banner-ok{background:#ECFDF5;color:#047857;border:1px solid #A7F3D0}
+  .banner-err{background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA}
+
+  .tbl{width:100%;font-size:14px;border-collapse:separate;border-spacing:0}
+  .tbl th{background:#F8FAFC;text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:12px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .tbl td{padding:14px 16px;border-bottom:1px solid #EEF1F5;vertical-align:middle}
+  .tbl tbody tr:hover td{background:#FAFBFD}
+  .chip-ub{display:inline-flex;position:relative;overflow:hidden;font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:600;font-size:13px;color:var(--ink);background:var(--amber-soft);border:1px solid var(--amber-line);border-radius:8px;padding:3px 10px 3px 15px;white-space:nowrap}
+  .chip-ub::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:repeating-linear-gradient(-45deg,var(--ink) 0 3px,var(--amber) 3px 6px)}
+  .qty{display:inline-block;min-width:46px;text-align:center;font-weight:700;background:#F1F5F9;border-radius:999px;padding:3px 12px}
+
+  .ac-dropdown{position:absolute;z-index:60;left:0;right:0;top:100%;margin-top:6px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 44px -14px rgba(15,23,42,.30);max-height:300px;overflow-y:auto;display:none;padding:6px}
   .ac-dropdown.show{display:block}
-  .ac-item{padding:8px 12px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center;transition:background .1s}
-  .ac-item:hover,.ac-item.active{background:#eef2ff}
-  .ac-item .ac-code{font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#1e293b;font-size:12px}
-  .ac-item .ac-desc{font-size:11px;color:#64748b;flex:1;margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .ac-item .ac-tag{font-size:10px;padding:2px 6px;border-radius:9999px;background:#f1f5f9;color:#475569;white-space:nowrap}
-  .ac-item .ac-tag.pat{background:#ede9fe;color:#5b21b6}
-  .ac-empty{padding:10px 12px;font-size:12px;color:#94a3b8;text-align:center}
-  .readonly-field{background:#f8fafc!important;color:#475569!important;cursor:not-allowed!important}
-  .ac-item .ac-tag.warn,.ac-tag.warn{background:#fef3c7;color:#92400e;font-size:10px;padding:2px 6px;border-radius:9999px;white-space:nowrap}
-  button:disabled{opacity:.5;cursor:not-allowed}
-  button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #6366f1;outline-offset:2px}
-  @media (prefers-reduced-motion:reduce){.fade-in{animation:none}}
+  .ac-item{padding:9px 10px;border-radius:10px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .ac-item:hover,.ac-item.active{background:var(--amber-soft)}
+  .ac-code{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:600;font-size:13px}
+  .ac-desc{font-size:12px;color:var(--muted);flex:1;margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ac-tag{font-size:10.5px;padding:2px 8px;border-radius:999px;background:#F1F5F9;color:#475569;white-space:nowrap;font-weight:600}
+  .ac-tag.pat{background:var(--ink);color:#fff}
+  .ac-tag.warn{background:#FEF3C7;color:#92400E}
+  .ac-empty{padding:12px;font-size:13px;color:#94A3B8;text-align:center}
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:4px}
+
+  .overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:50;padding:16px;align-items:center;justify-content:center}
+  .modal{background:#fff;border-radius:22px;max-width:420px;width:100%;padding:24px;box-shadow:0 30px 60px -20px rgba(15,23,42,.45);animation:pop .18s ease-out}
+  .modal-ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none}
+  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+  .spin{width:14px;height:14px;border:2px solid #CBD5E1;border-top-color:var(--ink);border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800">
+<body>
 
-<header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
-    <div class="flex items-center gap-3">
-      <div class="bg-indigo-500 p-2 rounded-lg"><i class="fa-solid fa-warehouse"></i></div>
-      <div>
-        <h1 class="font-bold text-lg leading-tight">Gestión de Reservas</h1>
-        <p class="text-xs text-slate-400">Universal Sept 2026 · Base de datos compartida</p>
+<header class="topbar">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
+      <div class="min-w-0">
+        <h1 class="font-bold text-[17px] leading-tight tracking-tight truncate">Gestión de Reservas</h1>
+        <p class="text-xs text-slate-500 truncate">Universal Sept 2026 · Base de datos compartida</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full bg-slate-800 text-xs font-medium">
-        <i class="fa-solid fa-bookmark mr-1.5 text-purple-400"></i>
-        <span id="totalCount">0</span> reservas
-      </span>
-      <button onclick="cargarReservas()" class="bg-slate-700 hover:bg-slate-600 transition text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2" title="Refrescar">
-        <i class="fa-solid fa-rotate"></i>
+      <span class="pill hidden sm:inline-flex"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span><span id="totalCount">0</span> reservas</span></span>
+      <button onclick="cargarReservas()" class="btn btn-ghost !px-0 w-[42px]" title="Refrescar" aria-label="Refrescar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
       </button>
-      <button onclick="openExportModal()" class="bg-emerald-600 hover:bg-emerald-500 transition text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
-        <i class="fa-solid fa-file-export"></i> Exportar XLSX
+      <button onclick="openExportModal()" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg>
+        <span class="hidden sm:inline">Exportar XLSX</span>
       </button>
     </div>
   </div>
 </header>
 
-<main class="max-w-7xl mx-auto px-4 py-6">
+<main class="max-w-6xl mx-auto px-4 py-8">
 
-  <section class="grid grid-cols-2 gap-4 mb-6">
-    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
-      <div class="flex items-center justify-between">
-        <div><p class="text-xs text-slate-500 font-medium uppercase">Reservas</p><p id="statTotal" class="text-2xl font-bold">0</p></div>
-        <div class="bg-indigo-100 text-indigo-600 p-2.5 rounded-lg"><i class="fa-solid fa-layer-group"></i></div>
-      </div>
+  <section class="flex flex-wrap items-end justify-between gap-5 mb-6">
+    <div>
+      <h2 class="text-[28px] leading-tight font-bold tracking-tight">Reservas de almacén</h2>
+      <p class="text-slate-500 mt-1 max-w-md">Registra en qué ubicación queda guardado cada artículo en reserva y consúltalo cuando lo necesites.</p>
     </div>
-    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
-      <div class="flex items-center justify-between">
-        <div><p class="text-xs text-slate-500 font-medium uppercase">Catálogo maestro</p><p id="statCatalogo" class="text-2xl font-bold text-purple-600">0</p></div>
-        <div class="bg-purple-100 text-purple-600 p-2.5 rounded-lg"><i class="fa-solid fa-book"></i></div>
-      </div>
+    <div class="flex gap-3">
+      <div class="stat"><span class="stat-n" id="statTotal">0</span><span class="stat-l">Reservas</span></div>
+      <div class="stat"><span class="stat-n" id="statCatalogo">0</span><span class="stat-l">Artículos en catálogo</span></div>
     </div>
   </section>
 
-  <nav class="flex gap-1 border-b border-slate-300 mb-6" role="tablist">
-    <button id="tab-alta" role="tab" type="button" onclick="mostrarTab('alta')"><i class="fa-solid fa-plus-circle mr-1.5"></i>Alta de reserva</button>
-    <button id="tab-consulta" role="tab" type="button" onclick="mostrarTab('consulta')"><i class="fa-solid fa-magnifying-glass mr-1.5"></i>Consulta <span id="tabCount" class="ml-1 text-xs bg-slate-200 text-slate-600 rounded-full px-2 py-0.5">0</span></button>
+  <nav class="seg mb-6" role="tablist">
+    <button id="tab-alta" role="tab" type="button" class="seg-btn on" onclick="mostrarTab('alta')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Alta de reserva
+    </button>
+    <button id="tab-consulta" role="tab" type="button" class="seg-btn" onclick="mostrarTab('consulta')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Consulta <span id="tabCount" class="seg-count">0</span>
+    </button>
   </nav>
-  <section id="secAlta" class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
-    <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-plus-circle text-indigo-600"></i>
-        <h2 class="font-semibold">Alta de Reserva</h2>
-      </div>
-      <p class="text-xs text-slate-500">El Alterno debe existir en el catálogo maestro</p>
-    </div>
-    <form id="formAlta" class="p-5 grid grid-cols-1 md:grid-cols-12 gap-4" novalidate autocomplete="off">
-      <div class="md:col-span-6 relative">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Ubicación de reserva <span class="text-purple-500">*</span></label>
-        <input type="text" id="ubReserva" autocomplete="off" maxlength="12" role="combobox" aria-controls="ac-ubReserva"
-          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
-          placeholder="Escribe ej: C24T4, E01R8, DR08T3">
-        <div id="ac-ubReserva" class="ac-dropdown" role="listbox"></div>
-        <p id="err-ubReserva" class="text-xs text-red-600 mt-1 hidden" aria-live="polite"></p>
-        <p id="warn-ubReserva" class="text-xs mt-1 hidden" aria-live="polite"></p>
-      </div>
-      <div class="md:col-span-6 relative">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Alterno <span class="text-purple-500">*</span> <span class="text-slate-400 text-xs font-normal">(catálogo maestro: 11,133 artículos)</span></label>
-        <input type="text" id="alterno" autocomplete="off" maxlength="30"
-          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
-          placeholder="Alterno, clave, corto o descripción (ej. 00037_1, lija 220)">
-        <div id="ac-alterno" class="ac-dropdown"></div>
-        <p id="err-alterno" class="text-xs text-red-600 mt-1 hidden" aria-live="polite"></p>
-      </div>
 
-      <div class="md:col-span-3">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Corto <span class="text-slate-400 text-xs">(auto)</span></label>
-        <input type="text" id="corto" readonly tabindex="-1" class="readonly-field w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none uppercase" placeholder="—">
-      </div>
-      <div class="md:col-span-3">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Clave <span class="text-slate-400 text-xs">(auto)</span></label>
-        <input type="text" id="clave" readonly tabindex="-1" class="readonly-field w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none uppercase" placeholder="—">
-      </div>
-      <div class="md:col-span-3">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Ubicación 1 <span class="text-slate-400 text-xs">(auto)</span></label>
-        <input type="text" id="ubPrincipal" readonly tabindex="-1" class="readonly-field w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none uppercase" placeholder="—">
-      </div>
-      <div class="md:col-span-3">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Cant. <span class="text-purple-500">*</span></label>
-        <input type="number" id="cantidad" min="0" step="any" value="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-        <p id="err-cantidad" class="text-xs text-red-600 mt-1 hidden" aria-live="polite"></p>
-      </div>
-      <div class="md:col-span-12">
-        <label class="block text-xs font-medium text-slate-600 mb-1">Artículo <span class="text-slate-400 text-xs">(auto)</span></label>
-        <input type="text" id="articulo" readonly tabindex="-1" class="readonly-field w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none" placeholder="—">
-      </div>
+  <section id="secAlta">
+    <form id="formAlta" class="split" novalidate autocomplete="off">
+      <div class="card"><div class="card-b">
+        <h3 class="text-lg font-bold">Nueva reserva</h3>
+        <p class="text-sm text-slate-500 mb-6">Indica la ubicación y elige el artículo del catálogo.</p>
 
-      <div class="md:col-span-12 flex flex-col sm:flex-row gap-2 items-stretch">
-        <button type="submit" id="btnGuardar" disabled class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm">
-          <i class="fa-solid fa-floppy-disk"></i> Guardar reserva
-        </button>
-        <button type="reset" class="sm:w-32 border border-slate-300 text-slate-600 hover:bg-slate-50 py-2 rounded-lg text-sm font-medium transition">
-          <i class="fa-solid fa-eraser mr-1"></i>Limpiar
-        </button>
-      </div>
-      <p id="estadoForm" class="md:col-span-12 text-xs" aria-live="polite"></p>
-      <p id="formMsg" class="md:col-span-12 text-sm hidden"></p>
+        <div class="relative mb-5">
+          <label class="label" for="ubReserva">Ubicación de reserva <span class="text-red-500">*</span></label>
+          <input type="text" id="ubReserva" autocomplete="off" maxlength="12" role="combobox" aria-controls="ac-ubReserva"
+            class="field field-code uppercase" placeholder="Ej. C24T4, E01R8, DR08T3">
+          <div id="ac-ubReserva" class="ac-dropdown" role="listbox"></div>
+          <p id="err-ubReserva" class="text-xs text-red-600 mt-1.5 hidden" aria-live="polite"></p>
+          <p id="warn-ubReserva" class="text-xs mt-1.5 hidden" aria-live="polite"></p>
+        </div>
+
+        <div class="relative mb-5">
+          <label class="label" for="alterno">Artículo <span class="text-red-500">*</span> <small>(catálogo maestro: 11,133 artículos)</small></label>
+          <input type="text" id="alterno" autocomplete="off" maxlength="30" class="field uppercase" placeholder="Alterno, clave, corto o descripción (ej. 00037_1, lija 220)">
+          <div id="ac-alterno" class="ac-dropdown"></div>
+          <p id="err-alterno" class="text-xs text-red-600 mt-1.5 hidden" aria-live="polite"></p>
+        </div>
+
+        <div class="mb-6" style="max-width:220px">
+          <label class="label" for="cantidad">Cantidad <span class="text-red-500">*</span></label>
+          <input type="number" id="cantidad" min="0" step="any" value="0" class="field">
+          <p id="err-cantidad" class="text-xs text-red-600 mt-1.5 hidden" aria-live="polite"></p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button type="submit" id="btnGuardar" disabled class="btn btn-primary flex-1">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>Guardar reserva
+          </button>
+          <button type="reset" class="btn btn-ghost sm:w-36">Limpiar</button>
+        </div>
+        <p id="estadoForm" class="hidden"></p>
+        <p id="formMsg" class="banner hidden mt-4" role="status"></p>
+      </div></div>
+
+      <aside class="card"><div class="card-b">
+        <h3 class="text-lg font-bold">Artículo seleccionado</h3>
+        <p class="text-sm text-slate-500 mb-5">Se completa solo al elegir el artículo.</p>
+        <div class="ficha">
+          <div class="ficha-row"><span class="ficha-k">Artículo</span><textarea id="articulo" readonly tabindex="-1" rows="2" class="ficha-v" placeholder="—"></textarea></div>
+          <div class="ficha-row"><span class="ficha-k">Corto</span><input type="text" id="corto" readonly tabindex="-1" class="ficha-v mono uppercase" placeholder="—"></div>
+          <div class="ficha-row"><span class="ficha-k">Clave</span><input type="text" id="clave" readonly tabindex="-1" class="ficha-v mono uppercase" placeholder="—"></div>
+          <div class="ficha-row"><span class="ficha-k">Ubicación 1 (principal)</span><input type="text" id="ubPrincipal" readonly tabindex="-1" class="ficha-v mono uppercase" placeholder="—"></div>
+        </div>
+      </div></aside>
     </form>
   </section>
 
-  <section id="secConsulta" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hidden">
-    <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-list-check text-indigo-600"></i>
-        <h2 class="font-semibold">Reservas registradas</h2>
-        <span id="loadingIndicator" class="text-xs text-slate-400 hidden"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Cargando...</span>
+  <section id="secConsulta" class="card overflow-hidden hidden">
+    <div class="flex flex-wrap items-center justify-between gap-3 p-5 bb">
+      <div class="flex items-center gap-3">
+        <h3 class="text-lg font-bold">Reservas registradas</h3>
+        <span id="loadingIndicator" class="text-xs text-slate-400 hidden inline-flex items-center gap-2"><span class="spin"></span>Cargando...</span>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <div class="relative">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          <input type="text" id="filtroTexto" placeholder="Buscar..." class="pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-52">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" id="filtroTexto" placeholder="Buscar ubicación, clave, artículo…" class="field w-64" style="height:40px;font-size:14px;padding-left:36px">
         </div>
-        <select id="filtroZona" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" aria-label="Filtrar por zona"><option value="">Todas las zonas</option></select>
-        <button onclick="limpiarTodo()" class="text-xs text-red-600 hover:text-red-700 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg transition">
-          <i class="fa-solid fa-trash-can mr-1"></i>Vaciar
-        </button>
+        <select id="filtroZona" class="field" style="height:40px;font-size:14px;width:auto" aria-label="Filtrar por zona"><option value="">Todas las zonas</option></select>
+        <button onclick="limpiarTodo()" class="btn btn-soft-danger" style="height:40px">Vaciar</button>
       </div>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+      <table class="tbl">
+        <thead>
           <tr>
-            <th class="px-3 py-3 text-left font-medium">Ubicación</th>
-            <th class="px-3 py-3 text-left font-medium">Corto</th>
-            <th class="px-3 py-3 text-left font-medium">Clave</th>
-            <th class="px-3 py-3 text-left font-medium">Alterno</th>
-            <th class="px-3 py-3 text-left font-medium">Artículo</th>
-            <th class="px-3 py-3 text-right font-medium">Cant.</th>
-            <th class="px-3 py-3 text-center font-medium">Acciones</th>
+            <th>Ubicación</th><th>Corto</th><th>Clave</th><th>Alterno</th><th>Artículo</th>
+            <th style="text-align:right">Cant.</th><th></th>
           </tr>
         </thead>
-        <tbody id="tbody" class="divide-y divide-slate-100"></tbody>
+        <tbody id="tbody"></tbody>
       </table>
     </div>
-    <div id="emptyState" class="py-12 text-center text-slate-400">
-      <i class="fa-solid fa-inbox text-4xl mb-3 text-slate-300"></i>
-      <p class="text-sm">No hay reservas registradas.</p>
-      <p class="text-xs mt-1">Completa el formulario superior para comenzar.</p>
+    <div id="emptyState" class="py-16 text-center">
+      <div class="mx-auto w-14 h-14 rounded-2xl bg-slate-100 grid place-items-center text-slate-400 mb-4">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>
+      </div>
+      <p class="font-semibold">No hay reservas registradas.</p>
+      <p class="text-sm text-slate-500 mt-1">Crea la primera desde la pestaña Alta de reserva.</p>
     </div>
   </section>
 </main>
 
-<footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-slate-400">
+<footer class="max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-400">
   Sistema de reservas · Datos compartidos vía Google Sheets
 </footer>
 
-<div id="exportModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-  <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 fade-in">
-    <div class="flex items-center gap-3 mb-4">
-      <div class="bg-emerald-100 text-emerald-600 p-2.5 rounded-lg"><i class="fa-solid fa-lock"></i></div>
-      <div><h3 class="font-semibold">Exportación protegida</h3><p class="text-xs text-slate-500">Ingresa la contraseña para continuar</p></div>
+<div id="exportModal" class="overlay hidden">
+  <div class="modal">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="modal-ico bg-amber-100 text-amber-700"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 118 0v3"/></svg></div>
+      <div><h3 class="font-bold text-lg leading-tight">Exportación protegida</h3><p class="text-sm text-slate-500">Ingresa la contraseña para continuar</p></div>
     </div>
-    <input type="password" id="exportPass" placeholder="Contraseña" autocomplete="off"
-      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none mb-2">
-    <p id="exportError" class="text-xs text-red-600 mb-2 hidden">Contraseña incorrecta.</p>
-    <div class="flex gap-2 mt-3">
-      <button onclick="closeExportModal()" class="flex-1 border border-slate-300 text-slate-600 hover:bg-slate-50 py-2 rounded-lg text-sm font-medium">Cancelar</button>
-      <button onclick="confirmExport()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg text-sm font-medium">Exportar</button>
+    <input type="password" id="exportPass" placeholder="Contraseña" autocomplete="off" class="field mb-2">
+    <p id="exportError" class="text-sm text-red-600 mb-2 hidden">Contraseña incorrecta.</p>
+    <div class="flex gap-3 mt-4">
+      <button onclick="closeExportModal()" class="btn btn-ghost flex-1">Cancelar</button>
+      <button onclick="confirmExport()" class="btn btn-primary flex-1">Exportar</button>
     </div>
   </div>
 </div>
 
-<div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-  <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 fade-in">
+<div id="deleteModal" class="overlay hidden">
+  <div class="modal">
     <div class="flex items-center gap-3 mb-4">
-      <div class="bg-red-100 text-red-600 p-2.5 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
-      <div><h3 class="font-semibold">Confirmar baja</h3><p class="text-xs text-slate-500">Esta acción no se puede deshacer</p></div>
+      <div class="modal-ico bg-red-100 text-red-600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+      <div><h3 class="font-bold text-lg leading-tight">Confirmar baja</h3><p class="text-sm text-slate-500">Esta acción no se puede deshacer</p></div>
     </div>
-    <p id="deleteMsg" class="text-sm text-slate-600 mb-4">¿Dar de baja esta reserva?</p>
-    <label id="deleteCheckBox" class="hidden flex items-start gap-2 text-sm bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-3 mb-4">
+    <p id="deleteMsg" class="text-[15px] text-slate-700 mb-4">¿Dar de baja esta reserva?</p>
+    <label id="deleteCheckBox" class="hidden flex items-start gap-3 text-sm bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3 mb-4">
       <input type="checkbox" id="deleteCheck" class="mt-0.5">
       <span>Esta reserva tiene <b id="deleteUnits"></b>. Confirmo que ya fueron trasladadas o ajustadas.</span>
     </label>
-    <div class="flex gap-2">
-      <button onclick="closeDeleteModal()" class="flex-1 border border-slate-300 text-slate-600 hover:bg-slate-50 py-2 rounded-lg text-sm font-medium">Cancelar</button>
-      <button id="deleteBtn" onclick="confirmDelete()" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg text-sm font-medium">Dar de baja</button>
+    <div class="flex gap-3">
+      <button onclick="closeDeleteModal()" class="btn btn-ghost flex-1">Cancelar</button>
+      <button id="deleteBtn" onclick="confirmDelete()" class="btn btn-danger flex-1">Dar de baja</button>
     </div>
   </div>
 </div>
@@ -11581,6 +11632,7 @@ let deleteTargetRow = null;
 let seleccion = null;                 // artículo elegido del catálogo maestro
 let guardando = false;
 const tocado = { ub: false, alt: false, cant: false };
+const ICO_TRASH = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>';
 
 /* =========================================================
    CARGA DEL CATÁLOGO MAESTRO (Universal_Septiembre_2026.xlsx)
@@ -11733,15 +11785,16 @@ function limpiarCamposAuto() {
 
 /* ---- Ubicación de reserva (predictivo según la estructura del Excel) ---- */
 function ocupacionDe(code) { return RESERVAS.filter((r) => canon(r.ub) === code).length; }
+const TIPO_SUG = { 'Anaquel': 'Estante', 'Torre / tarima': 'Nivel', 'Rack': 'Rack', 'Especial': 'Especial' };
 function proveedorUbic(v) {
   const q = String(v || '').trim();
   if (!q) {
-    const desc = (z) => { const a = ANAQUEL[z], t = TORRE[z], r = RACK[z]; return z === 'A' ? 'subzonas A A, A B' : `${a ? 'anaquel ' + pad(a.p[0]) + '–' + pad(a.p[1]) : ''}${t ? ' · torres' : ''}${r ? ' · racks' : ''}`; };
-    return ['C', 'D', 'V', 'B', 'T', 'DR', 'E', 'M', 'N', 'O', 'P', 'A'].map((z) => ({ value: z.length === 1 ? z + ' ' : z, html: `<span class="ac-code">${z}</span><span class="ac-desc">Zona ${z} · ${esc(desc(z))}</span>` }));
+    const desc = (z) => { const a = ANAQUEL[z], t = TORRE[z], r = RACK[z]; return z === 'A' ? 'subáreas A A, A B' : `${a ? 'estante ' + pad(a.p[0]) + '–' + pad(a.p[1]) : ''}${t ? ' · nivel' : ''}${r ? ' · racks' : ''}`; };
+    return ['C', 'D', 'V', 'B', 'T', 'DR', 'E', 'M', 'N', 'O', 'P', 'A'].map((z) => ({ value: z.length === 1 ? z + ' ' : z, html: `<span class="ac-code">${z}</span><span class="ac-desc">Área ${z} · ${esc(desc(z))}</span>` }));
   }
   return sugerirUbic(q, 'u2', 10).map((x) => {
     const n = ocupacionDe(x.code);
-    return { value: x.code, html: `<span class="ac-code">${esc(x.code)}</span><span class="ac-desc">${esc(x.tipo)}</span>${n ? `<span class="ac-tag ${n >= MAX_POR_RESERVA ? 'warn' : ''}">${n} art.</span>` : ''}` };
+    return { value: x.code, html: `<span class="ac-code">${esc(x.code)}</span><span class="ac-desc">${esc(TIPO_SUG[x.tipo] || x.tipo)}</span>${n ? `<span class="ac-tag ${n >= MAX_POR_RESERVA ? 'warn' : ''}">${n} art.</span>` : ''}` };
   });
 }
 
@@ -11844,7 +11897,7 @@ $('formAlta').addEventListener('submit', async function (e) {
 function mostrarMsg(texto, tipo) {
   const msg = $('formMsg');
   msg.textContent = texto;
-  msg.className = 'md:col-span-12 text-sm ' + (tipo === 'ok' ? 'text-emerald-600' : 'text-red-600');
+  msg.className = 'banner mt-4 ' + (tipo === 'ok' ? 'banner-ok' : 'banner-err');
   msg.classList.remove('hidden');
   clearTimeout(mostrarMsg._t);
   mostrarMsg._t = setTimeout(() => msg.classList.add('hidden'), 4500);
@@ -11884,20 +11937,18 @@ function renderTabla() {
   empty.classList.add('hidden');
   tbody.innerHTML = lista.map((r) => {
     const c = canon(r.ub), info = MAPA_U2.get(c), n = occ.get(c) || 0;
-    const sub = info ? `<span class="text-[11px] text-slate-400 block">${esc(info.tipo)}${n > 1 ? ' · ' + n + ' art.' : ''}</span>` : '<span class="text-[11px] text-amber-600 block">Formato no válido, revisar</span>';
+    const sub = info ? `<span class="block text-[11px] text-slate-400 mt-1">${esc(info.tipo)}${n > 1 ? ' · ' + n + ' art.' : ''}</span>` : '<span class="block text-[11px] text-amber-600 mt-1">Formato no válido, revisar</span>';
     const sat = n > MAX_POR_RESERVA ? ' <span class="ac-tag warn">saturada</span>' : '';
     return `
-    <tr class="hover:bg-slate-50">
-      <td class="px-3 py-2 font-medium">${esc(r.ub)}${sat}${sub}</td>
-      <td class="px-3 py-2 text-slate-600">${esc(r.corto)}</td>
-      <td class="px-3 py-2 text-slate-600">${esc(r.clave)}</td>
-      <td class="px-3 py-2 font-mono text-xs">${esc(r.alterno)}</td>
-      <td class="px-3 py-2 text-slate-600">${esc(r.articulo)}</td>
-      <td class="px-3 py-2 text-right font-semibold">${nf.format(r.cantidad)}</td>
-      <td class="px-3 py-2 text-center">
-        <button onclick="pedirDelete(${r._row})" class="text-red-500 hover:text-red-700 p-1" title="Dar de baja" aria-label="Dar de baja">
-          <i class="fa-solid fa-trash"></i>
-        </button>
+    <tr>
+      <td><span class="chip-ub">${esc(r.ub)}</span>${sat}${sub}</td>
+      <td class="mono text-slate-500 text-[13px]">${esc(r.corto)}</td>
+      <td class="mono text-slate-500 text-[13px]">${esc(r.clave)}</td>
+      <td class="mono text-[13px] font-semibold">${esc(r.alterno)}</td>
+      <td class="text-slate-600" style="min-width:14rem">${esc(r.articulo)}</td>
+      <td class="text-right"><span class="qty">${nf.format(r.cantidad)}</span></td>
+      <td class="text-right">
+        <button onclick="pedirDelete(${r._row})" class="icon-btn" title="Dar de baja" aria-label="Dar de baja">${ICO_TRASH}</button>
       </td>
     </tr>`;
   }).join('');
@@ -12023,7 +12074,7 @@ function mostrarTab(t) {
   [['alta', alta], ['consulta', !alta]].forEach(([k, on]) => {
     const b = $('tab-' + k);
     b.setAttribute('aria-selected', on);
-    b.className = 'px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ' + (on ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700');
+    b.classList.toggle('on', on);
   });
 }
 

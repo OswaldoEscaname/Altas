@@ -60,23 +60,11 @@
 
 <main class="max-w-7xl mx-auto px-4 py-6">
 
-  <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <section class="grid grid-cols-2 gap-4 mb-6">
     <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
       <div class="flex items-center justify-between">
         <div><p class="text-xs text-slate-500 font-medium uppercase">Reservas</p><p id="statTotal" class="text-2xl font-bold">0</p></div>
         <div class="bg-indigo-100 text-indigo-600 p-2.5 rounded-lg"><i class="fa-solid fa-layer-group"></i></div>
-      </div>
-    </div>
-    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
-      <div class="flex items-center justify-between">
-        <div><p class="text-xs text-slate-500 font-medium uppercase">Unidades</p><p id="statUnidades" class="text-2xl font-bold text-emerald-600">0</p></div>
-        <div class="bg-emerald-100 text-emerald-600 p-2.5 rounded-lg"><i class="fa-solid fa-cubes"></i></div>
-      </div>
-    </div>
-    <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
-      <div class="flex items-center justify-between">
-        <div><p class="text-xs text-slate-500 font-medium uppercase">Alternos únicos</p><p id="statSkus" class="text-2xl font-bold text-amber-600">0</p></div>
-        <div class="bg-amber-100 text-amber-600 p-2.5 rounded-lg"><i class="fa-solid fa-barcode"></i></div>
       </div>
     </div>
     <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-200">
@@ -87,7 +75,11 @@
     </div>
   </section>
 
-  <section class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
+  <nav class="flex gap-1 border-b border-slate-300 mb-6" role="tablist">
+    <button id="tab-alta" role="tab" type="button" onclick="mostrarTab('alta')"><i class="fa-solid fa-plus-circle mr-1.5"></i>Alta de reserva</button>
+    <button id="tab-consulta" role="tab" type="button" onclick="mostrarTab('consulta')"><i class="fa-solid fa-magnifying-glass mr-1.5"></i>Consulta <span id="tabCount" class="ml-1 text-xs bg-slate-200 text-slate-600 rounded-full px-2 py-0.5">0</span></button>
+  </nav>
+  <section id="secAlta" class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
     <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
       <div class="flex items-center gap-2">
         <i class="fa-solid fa-plus-circle text-indigo-600"></i>
@@ -149,17 +141,7 @@
     </form>
   </section>
 
-  <section class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-xs text-blue-900">
-    <p class="font-semibold mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Reglas de validación (extraídas del Excel maestro):</p>
-    <ul class="grid md:grid-cols-2 gap-2 list-disc list-inside">
-      <li><b>Ubicación:</b> escríbela sin espacio (<code>C24T4</code>) y se normaliza a <code>C 24T4</code>. Debe existir en el almacén: torres <code>C 58T1</code> (B, C, D, T, V, DR), racks <code>E 01R8</code> (E, M, N, O, P), anaquel <code>C 5802</code> o <code>A B302</code>, y <code>Z 9999</code>.</li>
-      <li><b>Zonas sin reserva:</b> F, G, W, RR, CC y BOD son solo de picking. La reserva tampoco puede ser igual a la Ubicación 1 del artículo.</li>
-      <li><b>Alterno:</b> debe existir en el catálogo maestro. Al elegirlo se autocompletan Corto, Clave, Ubicación 1 y Artículo. También busca por clave, corto o descripción.</li>
-      <li><b>Avisos (no bloquean):</b> reserva con más de 17 artículos, o en una zona distinta a la Ubicación 1. No se permite repetir artículo + ubicación.</li>
-    </ul>
-  </section>
-
-  <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+  <section id="secConsulta" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hidden">
     <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2">
         <i class="fa-solid fa-list-check text-indigo-600"></i>
@@ -11830,7 +11812,6 @@ function validar(mostrarTodo = false) {
   if (mC) pend.push('Cantidad');
   const ok = !pend.length && !guardando;
   $('btnGuardar').disabled = !ok;
-  $('estadoForm').innerHTML = pend.length ? `<span class="text-red-600">Por corregir: ${pend.join(', ')}</span>` : '<span class="text-emerald-600">Listo para guardar.</span>';
   return { ok, code: v.ok ? v.code : '' };
 }
 
@@ -11893,6 +11874,7 @@ function renderTabla() {
     });
   }
   $('totalCount').textContent = RESERVAS.length;
+  $('tabCount').textContent = RESERVAS.length;
   if (!lista.length) {
     tbody.innerHTML = '';
     empty.classList.remove('hidden');
@@ -11925,8 +11907,6 @@ $('filtroZona').addEventListener('change', renderTabla);
 
 function actualizarStats() {
   $('statTotal').textContent = RESERVAS.length;
-  $('statUnidades').textContent = nf.format(RESERVAS.reduce((s, r) => s + (r.cantidad || 0), 0));
-  $('statSkus').textContent = new Set(RESERVAS.map((r) => r.alterno)).size;
 }
 
 /* =========================================================
@@ -12036,7 +12016,19 @@ function initFormulario() {
   });
 }
 
+function mostrarTab(t) {
+  const alta = t === 'alta';
+  $('secAlta').classList.toggle('hidden', !alta);
+  $('secConsulta').classList.toggle('hidden', alta);
+  [['alta', alta], ['consulta', !alta]].forEach(([k, on]) => {
+    const b = $('tab-' + k);
+    b.setAttribute('aria-selected', on);
+    b.className = 'px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition ' + (on ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700');
+  });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+  mostrarTab('alta');
   cargarCatalogo();
   initFormulario();
   validar();

@@ -10,7 +10,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{color-scheme:dark;--text:#E8EDF5;--text2:#CBD5E1;--muted:#93A0B4;--line:#263041;--canvas:#0A0F16;--surface:#121923;--surface2:#0E141D;--surface3:#1A2331;--amber:#F5B301;--amber-soft:rgba(245,179,1,.12);--amber-line:rgba(245,179,1,.42);--bad:#F87171}
   *{box-sizing:border-box}
@@ -182,6 +182,58 @@
     body main.max-w-6xl{padding-top:14px}
     main > section:first-of-type{margin-bottom:12px}
   }
+
+  /* ===== Consulta: estilo del Localizador de inventario ===== */
+  #secConsulta{--c-surface:#1a1f26;--c-surface2:#212832;--c-border:#2b323c;--c-text:#e9ecf1;--c-muted:#8993a3;--c-muted2:#5c6675;--c-amber:#f0a202;--c-amber-dim:#7a5709;--c-green:#4f9d6e;--c-red:#e0563a;font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--c-text)}
+  #secConsulta .c-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  #secConsulta .c-brand{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.02em;font-size:22px;text-transform:uppercase;line-height:1.2}
+  #secConsulta .c-brand span{color:var(--c-amber)}
+  #secConsulta .c-sub{font-size:11.5px;color:var(--c-muted);margin-top:2px}
+  #secConsulta .c-shell{position:relative;border:1px solid var(--c-border);background:var(--c-surface);border-radius:3px;display:flex;align-items:center;transition:border-color .15s ease,box-shadow .15s ease}
+  #secConsulta .c-shell:focus-within{border-color:var(--c-amber);box-shadow:0 0 0 3px rgba(240,162,2,.14)}
+  #secConsulta .c-icon{flex:0 0 auto;width:44px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--c-muted2)}
+  #secConsulta .c-shell:focus-within .c-icon{color:var(--c-amber)}
+  #secConsulta #filtroTexto{flex:1;min-width:0;background:transparent;border:0;outline:0;box-shadow:none;color:var(--c-text);font-family:'IBM Plex Mono',monospace;font-size:16px;padding:14px 8px;letter-spacing:.01em}
+  #secConsulta #filtroTexto:focus-visible{outline:0}
+  #secConsulta #filtroTexto::placeholder{color:var(--c-muted2)}
+  #secConsulta .c-clear{flex:0 0 auto;display:none;background:transparent;border:0;color:var(--c-muted2);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12px;padding:8px 14px}
+  #secConsulta .c-clear:hover{color:var(--c-red)}
+  #secConsulta .c-toggles{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  #secConsulta .c-chip{font-size:11px;font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;padding:6px 11px;border:1px solid var(--c-border);border-radius:2px;color:var(--c-muted);cursor:pointer;background-color:var(--c-surface);user-select:none;transition:border-color .15s,color .15s}
+  #secConsulta select.c-chip{appearance:none;padding-right:26px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%238993a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 4l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
+  #secConsulta select.c-chip option{background:#1a1f26;color:#e9ecf1}
+  #secConsulta .c-chip:hover{border-color:var(--c-amber-dim);color:var(--c-amber)}
+  #secConsulta .c-chip.c-danger:hover{border-color:var(--c-red);color:var(--c-red)}
+  #secConsulta .c-meta{margin:18px 2px 10px;font-size:11.5px;color:var(--c-muted);display:flex;justify-content:space-between}
+  #secConsulta .c-results{display:flex;flex-direction:column;gap:8px}
+  #secConsulta .rcard{display:flex;border:1px solid var(--c-border);background:var(--c-surface);border-radius:3px;overflow:hidden}
+  #secConsulta .rloc{flex:0 0 124px;background:var(--c-surface2);border-right:1px dashed var(--c-border);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 8px;text-align:center;gap:4px}
+  #secConsulta .rloc-label{font-size:9px;letter-spacing:.08em;color:var(--c-muted2);text-transform:uppercase;font-family:'Oswald',sans-serif}
+  #secConsulta .rloc-val{font-family:'Oswald',sans-serif;font-weight:600;font-size:19px;color:var(--c-amber);letter-spacing:.01em;line-height:1.15}
+  #secConsulta .rloc-val2{font-size:11px;color:var(--c-muted)}
+  #secConsulta .rloc-empty{font-size:11px;color:var(--c-muted2)}
+  #secConsulta .rtag{font-family:'Oswald',sans-serif;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--c-red);border:1px solid var(--c-red);border-radius:2px;padding:1px 6px}
+  #secConsulta .rinfo{flex:1;padding:11px 14px;min-width:0}
+  #secConsulta .rart{font-size:13.5px;color:var(--c-text);line-height:1.4;margin-bottom:6px;overflow-wrap:anywhere}
+  #secConsulta mark{background:rgba(240,162,2,.28);color:var(--c-text);border-radius:2px;padding:0 1px}
+  #secConsulta .rmeta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11px;color:var(--c-muted)}
+  #secConsulta .rmeta .k{color:var(--c-muted2);margin-right:4px}
+  #secConsulta .rmeta b{color:var(--c-text);font-weight:500}
+  #secConsulta .stock{display:inline-flex;align-items:center;gap:5px}
+  #secConsulta .dot{width:6px;height:6px;border-radius:50%;background:var(--c-green);flex:0 0 auto}
+  #secConsulta .dot.low{background:var(--c-amber)}
+  #secConsulta .dot.out{background:var(--c-red)}
+  #secConsulta .rdel{flex:0 0 auto;width:48px;display:grid;place-items:center;background:transparent;border:0;border-left:1px solid var(--c-border);color:var(--c-muted2);cursor:pointer;transition:color .15s,background .15s}
+  #secConsulta .rdel:hover{color:var(--c-red);background:rgba(224,86,58,.08)}
+  #secConsulta .c-state{text-align:center;padding:60px 20px;color:var(--c-muted)}
+  #secConsulta .c-big{font-family:'Oswald',sans-serif;font-size:15px;color:var(--c-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+  #secConsulta .c-small{font-size:12px;color:var(--c-muted2);line-height:1.6}
+  @media(max-width:520px){
+    #secConsulta .rloc{flex-basis:92px}
+    #secConsulta .rloc-val{font-size:16px}
+    #secConsulta .c-brand{font-size:18px}
+    #secConsulta .rdel{width:44px}
+  }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -282,38 +334,32 @@
     </form>
   </section>
 
-  <section id="secConsulta" class="card overflow-hidden hidden">
-    <div class="flex flex-wrap items-center justify-between gap-3 p-5 bb">
-      <div class="flex items-center gap-3">
-        <h3 class="text-lg font-bold">Reservas registradas</h3>
-        <span id="loadingIndicator" class="text-xs text-slate-400 hidden inline-flex items-center gap-2"><span class="spin"></span>Cargando...</span>
+  <section id="secConsulta" class="hidden">
+    <div class="c-head">
+      <div>
+        <div class="c-brand">Reservas <span>registradas</span></div>
+        <div class="c-sub">Ubicación · Artículo · Cantidad en reserva</div>
       </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="relative">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input type="text" id="filtroTexto" placeholder="Buscar ubicación, clave, artículo…" class="field w-64" style="height:40px;font-size:14px;padding-left:36px">
-        </div>
-        <select id="filtroZona" class="field" style="height:40px;font-size:14px;width:auto" aria-label="Filtrar por zona"><option value="">Todas las zonas</option></select>
-        <button onclick="limpiarTodo()" class="btn btn-soft-danger" style="height:40px">Vaciar</button>
-      </div>
+      <span id="loadingIndicator" class="c-sub hidden inline-flex items-center gap-2"><span class="spin"></span>Cargando...</span>
     </div>
-    <div class="overflow-x-auto">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>Ubicación</th><th>Corto</th><th>Clave</th><th>Alterno</th><th>Artículo</th>
-            <th style="text-align:right">Cant.</th><th></th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
+
+    <div class="c-shell">
+      <div class="c-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
+      <input id="filtroTexto" type="text" autocomplete="off" spellcheck="false" placeholder="Busca ubicación, clave, alterno o artículo…">
+      <button type="button" class="c-clear" id="clearBusqueda">borrar</button>
     </div>
-    <div id="emptyState" class="py-16 text-center">
-      <div class="mx-auto w-14 h-14 rounded-2xl bg-slate-100 grid place-items-center text-slate-400 mb-4">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>
-      </div>
-      <p class="font-semibold">No hay reservas registradas.</p>
-      <p class="text-sm text-slate-500 mt-1">Crea la primera desde la pestaña Alta de reserva.</p>
+
+    <div class="c-toggles">
+      <select id="filtroZona" class="c-chip" aria-label="Filtrar por zona"><option value="">Todas las zonas</option></select>
+      <button type="button" onclick="limpiarTodo()" class="c-chip c-danger">Vaciar</button>
+    </div>
+
+    <div class="c-meta" id="resultsMeta" style="display:none"></div>
+    <div id="tbody" class="c-results"></div>
+
+    <div id="emptyState" class="c-state">
+      <p class="c-big">No hay reservas registradas.</p>
+      <p class="c-small">Crea la primera desde la pestaña Alta de reserva.</p>
     </div>
   </section>
 </main>
@@ -11753,11 +11799,11 @@ async function cargarReservas() {
     if (Array.isArray(data)) {
       RESERVAS = data.map((r, idx) => ({
         _row: idx + 2,
-        ub: r.ubicacion || '',
-        corto: r.corto || '',
-        clave: r.clave || '',
-        alterno: r.alterno || '',
-        articulo: r.articulo || '',
+        ub: String(r.ubicacion ?? ''),
+        corto: String(r.corto ?? ''),
+        clave: String(r.clave ?? ''),
+        alterno: String(r.alterno ?? ''),
+        articulo: String(r.articulo ?? ''),
         cantidad: Number(r.cantidad) || 0,
         ts: r.timestamp ? new Date(r.timestamp).getTime() : 0
       }));
@@ -11871,6 +11917,8 @@ function limpiarCamposAuto() {
 }
 
 /* ---- Ubicación de reserva (predictivo según la estructura del Excel) ---- */
+// Compara identificadores sin distinguir mayúsculas ni ceros a la izquierda (Sheets los pierde en números)
+const normId = (s) => String(s ?? '').trim().toUpperCase().replace(/^0+(?=\d)/, '');
 function ocupacionDe(code) { return RESERVAS.filter((r) => canon(r.ub) === code).length; }
 const TIPO_SUG = { 'Anaquel': 'Estante', 'Torre / tarima': 'Nivel', 'Rack': 'Rack', 'Especial': 'Especial' };
 function proveedorUbic(v) {
@@ -11916,7 +11964,7 @@ function validar(mostrarTodo = false) {
   else if (!v.ok) mUb = v.msg;
   else {
     if (seleccion && seleccion.u && canon(seleccion.u) === v.code) mUb = `La reserva no puede ser la misma que la Ubicación 1 del artículo (${seleccion.u}).`;
-    else if (seleccion && RESERVAS.some((r) => canon(r.ub) === v.code && r.alterno.toUpperCase() === seleccion.a.toUpperCase())) mUb = 'Este artículo ya tiene una reserva registrada en esa ubicación.';
+    else if (seleccion && RESERVAS.some((r) => canon(r.ub) === v.code && normId(r.alterno) === normId(seleccion.a))) mUb = 'Este artículo ya tiene una reserva registrada en esa ubicación.';
     else {
       const n = ocupacionDe(v.code);
       okTxt = `${TIPO_SUG[v.tipo] || v.tipo} · área ${v.zona}${n ? ` · ${n} artículo${n === 1 ? '' : 's'} ya la usa${n === 1 ? '' : 'n'}` : ' · libre'}`;
@@ -11968,8 +12016,9 @@ $('formAlta').addEventListener('submit', async function (e) {
     ub: r.code, corto: item.c.toUpperCase(), clave: item.k.toUpperCase(),
     alterno: item.a.toUpperCase(), articulo: item.d.toUpperCase(), cantidad: parseFloat($('cantidad').value) || 0
   };
-  guardando = true; validar();
+  guardando = true;
   try {
+    validar();
     await guardarReservaEnSheet(reserva);
     guardarUltimaUb(r.code);
     ubConservada = r.code;
@@ -11980,7 +12029,8 @@ $('formAlta').addEventListener('submit', async function (e) {
   } catch (err) {
     mostrarMsg('Error al guardar: ' + err.message, 'error');
   } finally {
-    guardando = false; validar();
+    guardando = false;
+    try { validar(); } catch (e2) { console.error(e2); }
   }
 });
 
@@ -11996,6 +12046,14 @@ function mostrarMsg(texto, tipo) {
 /* =========================================================
    RENDER
    ========================================================= */
+function resaltar(txt, q) {
+  const s = String(txt ?? '');
+  if (!q) return esc(s);
+  const i = s.toUpperCase().indexOf(q);
+  if (i === -1) return esc(s);
+  return esc(s.slice(0, i)) + '<mark>' + esc(s.slice(i, i + q.length)) + '</mark>' + esc(s.slice(i + q.length));
+}
+
 function renderTabla() {
   const tbody = $('tbody'), empty = $('emptyState');
   const filtro = ($('filtroTexto').value || '').trim().toUpperCase(), filtroS = filtro.replace(/\s+/g, '');
@@ -12018,33 +12076,44 @@ function renderTabla() {
   }
   $('totalCount').textContent = RESERVAS.length;
   $('tabCount').textContent = RESERVAS.length;
+  $('clearBusqueda').style.display = $('filtroTexto').value ? 'block' : 'none';
+  const meta = $('resultsMeta');
+  if (RESERVAS.length) { meta.style.display = 'flex'; meta.innerHTML = `<span>${nf.format(lista.length)} resultado${lista.length === 1 ? '' : 's'}</span><span>${nf.format(RESERVAS.length)} en total</span>`; }
+  else meta.style.display = 'none';
   if (!lista.length) {
     tbody.innerHTML = '';
     empty.classList.remove('hidden');
     empty.querySelector('p').textContent = RESERVAS.length ? 'Ninguna reserva coincide con los filtros.' : 'No hay reservas registradas.';
+    empty.querySelectorAll('p')[1].textContent = RESERVAS.length ? 'Prueba con otra búsqueda o cambia el filtro de zona.' : 'Crea la primera desde la pestaña Alta de reserva.';
     return;
   }
   empty.classList.add('hidden');
   tbody.innerHTML = lista.map((r) => {
     const c = canon(r.ub), info = MAPA_U2.get(c), n = occ.get(c) || 0;
-    const sub = info ? `<span class="block text-[11px] text-slate-400 mt-1">${esc(info.tipo)}${n > 1 ? ' · ' + n + ' art.' : ''}</span>` : '<span class="block text-[11px] text-amber-600 mt-1">Formato no válido, revisar</span>';
-    const sat = n > MAX_POR_RESERVA ? ' <span class="ac-tag warn">saturada</span>' : '';
+    const loc2 = info
+      ? `<div class="rloc-val2">${esc(TIPO_SUG[info.tipo] || info.tipo)}${n > 1 ? ' · ' + n + ' art.' : ''}</div>`
+      : '<div class="rloc-empty">formato no válido</div>';
+    const sat = n > MAX_POR_RESERVA ? '<div class="rtag">saturada</div>' : '';
+    const dot = r.cantidad <= 0 ? 'out' : (r.cantidad <= 5 ? 'low' : '');
     return `
-    <tr>
-      <td><span class="chip-ub">${esc(r.ub)}</span>${sat}${sub}</td>
-      <td class="mono text-slate-500 text-[13px]">${esc(r.corto)}</td>
-      <td class="mono text-slate-500 text-[13px]">${esc(r.clave)}</td>
-      <td class="mono text-[13px] font-semibold">${esc(r.alterno)}</td>
-      <td class="text-slate-600" style="min-width:14rem">${esc(r.articulo)}</td>
-      <td class="text-right"><span class="qty">${nf.format(r.cantidad)}</span></td>
-      <td class="text-right">
-        <button onclick="pedirDelete(${r._row})" class="icon-btn" title="Dar de baja" aria-label="Dar de baja">${ICO_TRASH}</button>
-      </td>
-    </tr>`;
+    <div class="rcard">
+      <div class="rloc"><div class="rloc-label">Reserva</div><div class="rloc-val">${esc(r.ub)}</div>${loc2}${sat}</div>
+      <div class="rinfo">
+        <div class="rart">${resaltar(r.articulo, filtro)}</div>
+        <div class="rmeta">
+          <span><span class="k">Corto</span><b>${resaltar(r.corto, filtro)}</b></span>
+          <span><span class="k">Clave</span><b>${resaltar(r.clave, filtro)}</b></span>
+          <span><span class="k">Alterno</span><b>${resaltar(r.alterno, filtro)}</b></span>
+          <span class="stock"><span class="dot ${dot}"></span><span class="k">Cant.</span><b>${nf.format(r.cantidad)}</b></span>
+        </div>
+      </div>
+      <button onclick="pedirDelete(${r._row})" class="rdel" title="Dar de baja" aria-label="Dar de baja">${ICO_TRASH}</button>
+    </div>`;
   }).join('');
 }
 $('filtroTexto').addEventListener('input', renderTabla);
 $('filtroZona').addEventListener('change', renderTabla);
+$('clearBusqueda').addEventListener('click', () => { $('filtroTexto').value = ''; renderTabla(); $('filtroTexto').focus(); });
 
 function actualizarStats() {
   $('statTotal').textContent = RESERVAS.length;

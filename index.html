@@ -10,11 +10,11 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{color-scheme:dark;--text:#E8EDF5;--text2:#CBD5E1;--muted:#93A0B4;--line:#263041;--canvas:#0A0F16;--surface:#121923;--surface2:#0E141D;--surface3:#1A2331;--amber:#F5B301;--amber-soft:rgba(245,179,1,.12);--amber-line:rgba(245,179,1,.42);--bad:#F87171}
   *{box-sizing:border-box}
-  body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--canvas);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+  body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--canvas);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
   body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(900px 420px at 88% -8%,rgba(245,179,1,.11),transparent 60%),radial-gradient(760px 460px at -8% 0,rgba(59,91,255,.14),transparent 60%)}
   .mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
   .bb{border-bottom:1px solid var(--line)}
@@ -120,6 +120,53 @@
   body .border-amber-200{border-color:rgba(245,179,1,.38)}
   body .text-amber-900{color:#FDE68A}
   input[type=checkbox]{accent-color:var(--amber)}
+
+  /* ===== Mejoras de legibilidad y uso (solo estilo) ===== */
+  body{line-height:1.5;font-size:15px}
+  ::selection{background:rgba(245,179,1,.35);color:#fff}
+  h1,h2,h3,.stat-n,.seg-btn{font-family:'Plus Jakarta Sans','Inter',system-ui,sans-serif}
+  h2.text-\[28px\]{font-size:clamp(24px,5.5vw,32px);font-weight:800;letter-spacing:-.025em}
+  h3{letter-spacing:-.01em}
+  .stat-n,.qty,#totalCount,.seg-count{font-variant-numeric:tabular-nums}
+  .stat-n{font-weight:800}
+  .label{font-size:13.5px;letter-spacing:.005em}
+  .field::placeholder{color:#6D7B91}
+  .field-code{font-size:17px;font-weight:700;letter-spacing:.04em}
+  .field.ok{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2334D399' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:42px}
+  .ficha{transition:border-color .2s,box-shadow .2s}
+  .ficha:has(textarea:not(:placeholder-shown)){border-color:var(--amber-line);box-shadow:0 0 0 3px rgba(245,179,1,.08)}
+  .ficha:has(textarea:not(:placeholder-shown)) #articulo{color:#fff}
+  .ficha-k{letter-spacing:.02em}
+  .btn-primary:disabled{background:#222C3B;color:#6F7E93;opacity:1;box-shadow:none}
+  .btn-ghost{color:#DCE4F0}
+  .ac-item{padding:10px 12px}
+  .ac-item.active{background:var(--amber-soft);box-shadow:inset 3px 0 0 var(--amber)}
+  .ac-code{font-size:13.5px;color:#fff}
+  .ac-desc{font-size:12.5px}
+  .chip-ub{font-size:14px;font-weight:700;padding:4px 11px 4px 16px}
+  .tbl th{font-size:12.5px;letter-spacing:.02em}
+  .tbl td{padding:15px 16px}
+  .tbl tbody tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+  .tbl tbody tr:hover td{background:#182130}
+  .banner{font-size:14.5px}
+  .modal{max-width:440px}
+  .modal h3{font-size:19px;font-weight:700}
+
+  /* Pantallas táctiles: áreas de toque de 44 px y letra de 16 px (evita el zoom automático en iPhone) */
+  @media(max-width:639px){
+    .field{font-size:16px!important;height:52px}
+    .field-code{font-size:18px!important}
+    .btn{height:46px}
+    .btn-lg{height:56px;min-height:56px;font-size:16px}
+    .seg{display:flex;width:100%}
+    .seg-btn{flex:1;justify-content:center;height:46px}
+    .icon-btn{width:42px;height:42px}
+    .card-b{padding:18px}
+    .stat{flex:1;min-width:0}
+    .ac-item{padding:12px}
+    .tbl td{padding:14px 12px}
+    .tbl th{padding:12px}
+  }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>

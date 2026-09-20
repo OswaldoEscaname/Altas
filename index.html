@@ -10,7 +10,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{color-scheme:dark;--text:#E8EDF5;--text2:#CBD5E1;--muted:#93A0B4;--line:#263041;--canvas:#0A0F16;--surface:#121923;--surface2:#0E141D;--surface3:#1A2331;--amber:#F5B301;--amber-soft:rgba(245,179,1,.12);--amber-line:rgba(245,179,1,.42);--bad:#F87171}
   *{box-sizing:border-box}
@@ -234,6 +234,58 @@
     #secConsulta .rloc-val{font-size:16px}
     #secConsulta .c-brand{font-size:18px}
     #secConsulta .rdel{width:44px}
+  }
+
+  /* ===== Consulta v2: tipografía y tamaños más cómodos de leer ===== */
+  #secConsulta{--c-muted:#9aa5b5;--c-muted2:#7d8898}
+  #secConsulta .c-brand{font-size:26px}
+  #secConsulta .c-sub{font-size:13px}
+  #secConsulta .c-icon{width:50px;height:56px}
+  #secConsulta .c-icon svg{width:20px;height:20px}
+  #secConsulta #filtroTexto{font-size:17px;padding:18px 8px}
+  #secConsulta .c-clear{font-size:13.5px;padding:10px 16px}
+  #secConsulta .c-toggles{gap:10px;margin-top:12px}
+  #secConsulta .c-chip{font-size:13px;padding:9px 14px}
+  #secConsulta select.c-chip{padding-right:34px}
+  #secConsulta .c-meta{font-size:13px;margin:22px 2px 12px}
+  #secConsulta .c-results{gap:10px}
+  #secConsulta .rcard{transition:border-color .15s ease}
+  #secConsulta .rcard:hover{border-color:var(--c-amber-dim)}
+  #secConsulta .rloc{flex-basis:150px;padding:14px 10px;gap:5px}
+  #secConsulta .rloc-label{font-size:11px;letter-spacing:.1em}
+  #secConsulta .rloc-val{font-size:26px;letter-spacing:.02em}
+  #secConsulta .rloc-val2,#secConsulta .rloc-empty{font-size:12.5px}
+  #secConsulta .rtag{font-size:11px;padding:2px 8px}
+  #secConsulta .rinfo{padding:14px 18px;display:flex;flex-direction:column;justify-content:center}
+  #secConsulta .rart{font-family:'IBM Plex Sans','IBM Plex Mono',system-ui,sans-serif;font-size:16.5px;font-weight:500;line-height:1.35;margin-bottom:9px}
+  #secConsulta .rmeta{font-size:13px;gap:6px 22px}
+  #secConsulta .rmeta b{font-size:13.5px;font-weight:600}
+  #secConsulta .rmeta .k{margin-right:6px}
+  #secConsulta .rqty{flex:0 0 auto;min-width:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 14px;border-left:1px dashed var(--c-border)}
+  #secConsulta .rqty-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--c-muted2)}
+  #secConsulta .rqty-val{display:flex;align-items:center;gap:7px;font-family:'Oswald',sans-serif;font-weight:600;font-size:26px;line-height:1.1;color:var(--c-text);font-variant-numeric:tabular-nums}
+  #secConsulta .rqty-val .dot{width:8px;height:8px}
+  #secConsulta .rdel{width:58px}
+  #secConsulta .rdel svg{width:20px;height:20px}
+  #secConsulta .c-big{font-size:17px}
+  #secConsulta .c-small{font-size:14px}
+  @media(max-width:640px){
+    #secConsulta .c-brand{font-size:22px}
+    #secConsulta .rloc{flex-basis:106px;padding:12px 6px}
+    #secConsulta .rloc-val{font-size:21px}
+    #secConsulta .rinfo{padding:12px}
+    #secConsulta .rart{font-size:15px}
+    #secConsulta .rmeta{font-size:12.5px;gap:4px 14px}
+    #secConsulta .rmeta b{font-size:13px}
+    #secConsulta .rqty{min-width:64px;padding:0 8px}
+    #secConsulta .rqty-val{font-size:21px}
+    #secConsulta .rdel{width:46px}
+  }
+  @media(max-width:400px){
+    #secConsulta .rloc{flex-basis:94px}
+    #secConsulta .rloc-val{font-size:19px}
+    #secConsulta .rqty{min-width:54px;padding:0 6px}
+    #secConsulta .rdel{width:40px}
   }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -12106,9 +12158,9 @@ function renderTabla() {
           <span><span class="k">Corto</span><b>${resaltar(r.corto, filtro)}</b></span>
           <span><span class="k">Clave</span><b>${resaltar(r.clave, filtro)}</b></span>
           <span><span class="k">Alterno</span><b>${resaltar(r.alterno, filtro)}</b></span>
-          <span class="stock"><span class="dot ${dot}"></span><span class="k">Cant.</span><b>${nf.format(r.cantidad)}</b></span>
         </div>
       </div>
+      <div class="rqty"><div class="rqty-label">Cant.</div><div class="rqty-val"><span class="dot ${dot}"></span>${nf.format(r.cantidad)}</div></div>
       <button onclick="pedirDelete(${r._row})" class="rdel" title="Dar de baja" aria-label="Dar de baja">${ICO_TRASH}</button>
     </div>`;
   }).join('');

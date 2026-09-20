@@ -31,6 +31,9 @@
   .btn-danger:hover{background:#B91C1C}
   .btn-soft-danger{background:#fff;border-color:#FECACA;color:#B91C1C}
   .btn-soft-danger:hover{background:#FEF2F2}
+  .btn-lg{height:54px;min-height:54px;font-size:15px;flex:none}
+  @media(max-width:639px){.btn-lg{width:100%}}
+  @media(min-width:640px){.btn-lg{height:46px;min-height:46px}}
   .btn:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
   .icon-btn{width:36px;height:36px;border-radius:10px;display:inline-grid;place-items:center;color:var(--muted);transition:background .15s,color .15s;cursor:pointer}
   .icon-btn:hover{background:#FEE2E2;color:#B91C1C}
@@ -177,10 +180,10 @@
         </div>
 
         <div class="flex flex-col sm:flex-row gap-3">
-          <button type="submit" id="btnGuardar" disabled class="btn btn-primary flex-1">
+          <button type="submit" id="btnGuardar" disabled class="btn btn-primary btn-lg sm:flex-1">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>Guardar reserva
           </button>
-          <button type="reset" class="btn btn-ghost sm:w-36">Limpiar</button>
+          <button type="reset" class="btn btn-ghost btn-lg sm:w-36">Limpiar</button>
         </div>
         <p id="estadoForm" class="hidden"></p>
         <p id="formMsg" class="banner hidden mt-4" role="status"></p>
@@ -243,13 +246,13 @@
   <div class="modal">
     <div class="flex items-center gap-3 mb-5">
       <div class="modal-ico bg-amber-100 text-amber-700"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 118 0v3"/></svg></div>
-      <div><h3 class="font-bold text-lg leading-tight">Exportación protegida</h3><p class="text-sm text-slate-500">Ingresa la contraseña para continuar</p></div>
+      <div><h3 id="passTitle" class="font-bold text-lg leading-tight">Exportación protegida</h3><p id="passSub" class="text-sm text-slate-500">Ingresa la contraseña para continuar</p></div>
     </div>
     <input type="password" id="exportPass" placeholder="Contraseña" autocomplete="off" class="field mb-2">
     <p id="exportError" class="text-sm text-red-600 mb-2 hidden">Contraseña incorrecta.</p>
     <div class="flex gap-3 mt-4">
       <button onclick="closeExportModal()" class="btn btn-ghost flex-1">Cancelar</button>
-      <button onclick="confirmExport()" class="btn btn-primary flex-1">Exportar</button>
+      <button id="passBtn" onclick="confirmExport()" class="btn btn-primary flex-1">Exportar</button>
     </div>
   </div>
 </div>
@@ -11632,6 +11635,10 @@ let deleteTargetRow = null;
 let seleccion = null;                 // artículo elegido del catálogo maestro
 let guardando = false;
 const tocado = { ub: false, alt: false, cant: false };
+let ubConservada = '';
+const LS_UB = 'ultimaUbicacionReserva';
+function guardarUltimaUb(v) { try { localStorage.setItem(LS_UB, v); } catch (e) { /* sin almacenamiento */ } }
+function leerUltimaUb() { try { return localStorage.getItem(LS_UB) || ''; } catch (e) { return ''; } }
 const ICO_TRASH = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>';
 
 /* =========================================================
@@ -11832,10 +11839,10 @@ function validar(mostrarTodo = false) {
     else if (seleccion && RESERVAS.some((r) => canon(r.ub) === v.code && r.alterno.toUpperCase() === seleccion.a.toUpperCase())) mUb = 'Este artículo ya tiene una reserva registrada en esa ubicación.';
     else {
       const n = ocupacionDe(v.code);
-      okTxt = `${v.tipo} · zona ${v.zona}${n ? ` · ${n} artículo${n === 1 ? '' : 's'} ya la usa${n === 1 ? '' : 'n'}` : ' · libre'}`;
+      okTxt = `${TIPO_SUG[v.tipo] || v.tipo} · área ${v.zona}${n ? ` · ${n} artículo${n === 1 ? '' : 's'} ya la usa${n === 1 ? '' : 'n'}` : ' · libre'}`;
       if (n >= MAX_POR_RESERVA) avisos.push(`Reserva muy ocupada (${n} artículos; máximo observado ${MAX_POR_RESERVA}).`);
       const z1 = seleccion && seleccion.u ? zonaDe(canon(seleccion.u)) : '';
-      if (z1 && z1 !== v.zona) avisos.push(`Zona distinta a la Ubicación 1 (${z1}); ocurre en ~12% de los casos.`);
+      if (z1 && z1 !== v.zona) avisos.push(`Área distinta a la Ubicación 1 (${z1}); ocurre en ~12% de los casos.`);
     }
   }
   pintarCampo(ubIn, $('err-ubReserva'), mUb, tocado.ub || mostrarTodo, !mUb && !v.vacio);
@@ -11884,9 +11891,12 @@ $('formAlta').addEventListener('submit', async function (e) {
   guardando = true; validar();
   try {
     await guardarReservaEnSheet(reserva);
-    mostrarMsg('Reserva guardada correctamente.', 'ok');
+    guardarUltimaUb(r.code);
+    ubConservada = r.code;
+    mostrarMsg('Reserva guardada en ' + r.code + '.', 'ok');
     this.reset();
     await cargarReservas();
+    $('alterno').focus();
   } catch (err) {
     mostrarMsg('Error al guardar: ' + err.message, 'error');
   } finally {
@@ -11987,7 +11997,11 @@ async function confirmDelete() {
     await cargarReservas();
   } catch (err) { alert('Error al eliminar: ' + err.message); }
 }
-async function limpiarTodo() {
+function limpiarTodo() {
+  if (!RESERVAS.length) return;
+  abrirModalClave('vaciar');
+}
+async function ejecutarVaciar() {
   if (!RESERVAS.length) return;
   if (!confirm('¿Vaciar TODAS las reservas? Esto borrará el Sheet.')) return;
   for (const r of RESERVAS.slice().reverse()) { try { await eliminarReservaEnSheet(r._row); } catch (e) { /* sigue */ } }
@@ -11997,8 +12011,14 @@ async function limpiarTodo() {
 /* =========================================================
    EXPORTAR (protegido con contraseña; solo se guarda su hash)
    ========================================================= */
-let intentos = 0, bloqueo = 0;
-function openExportModal() {
+let intentos = 0, bloqueo = 0, accionClave = 'export';
+function openExportModal() { abrirModalClave('export'); }
+function abrirModalClave(accion) {
+  accionClave = accion;
+  const vaciar = accion === 'vaciar';
+  $('passTitle').textContent = vaciar ? 'Vaciar reservas' : 'Exportación protegida';
+  $('passSub').textContent = vaciar ? 'Se borrarán todas las reservas. Ingresa la contraseña.' : 'Ingresa la contraseña para continuar';
+  $('passBtn').textContent = vaciar ? 'Continuar' : 'Exportar';
   $('exportModal').classList.remove('hidden'); $('exportModal').classList.add('flex');
   $('exportPass').value = ''; $('exportError').classList.add('hidden');
   setTimeout(() => $('exportPass').focus(), 100);
@@ -12008,7 +12028,7 @@ async function confirmExport() {
   const err = $('exportError');
   if (Date.now() < bloqueo) { err.textContent = `Demasiados intentos. Espera ${Math.ceil((bloqueo - Date.now()) / 1000)} s.`; err.classList.remove('hidden'); return; }
   const h = await hashTexto($('exportPass').value);
-  if (h === HASH_DESCARGA) { intentos = 0; closeExportModal(); exportarXLSX(); return; }
+  if (h === HASH_DESCARGA) { intentos = 0; closeExportModal(); if (accionClave === 'vaciar') ejecutarVaciar(); else exportarXLSX(); return; }
   intentos++;
   if (intentos >= 5) { bloqueo = Date.now() + 30000; intentos = 0; err.textContent = 'Demasiados intentos. Espera 30 s.'; }
   else err.textContent = 'Contraseña incorrecta.';
@@ -12039,6 +12059,8 @@ function exportarXLSX() {
    ========================================================= */
 function initFormulario() {
   const alt = $('alterno'), ubIn = $('ubReserva'), cant = $('cantidad');
+  const ultima = leerUltimaUb();
+  if (ultima && validarUbic(ultima, 'u2').ok) { ubIn.value = ultima; tocado.ub = true; }
   crearAc(alt, $('ac-alterno'), proveedorAlterno, (o) => seleccionarAlterno(o.item), 'Sin coincidencias en el catálogo maestro');
   crearAc(ubIn, $('ac-ubReserva'), proveedorUbic, (o) => { ubIn.value = o.value; tocado.ub = true; validar(); ubIn.dispatchEvent(new Event('input')); ubIn.focus(); }, '');
 
@@ -12060,6 +12082,8 @@ function initFormulario() {
     setTimeout(() => {
       seleccion = null; limpiarCamposAuto();
       tocado.ub = tocado.alt = tocado.cant = false;
+      if (ubConservada) { $('ubReserva').value = ubConservada; tocado.ub = true; ubConservada = ''; }
+      else guardarUltimaUb('');
       ['ubReserva', 'alterno', 'cantidad'].forEach((id) => $(id).classList.remove('ok', 'err'));
       ['err-ubReserva', 'err-alterno', 'err-cantidad', 'warn-ubReserva'].forEach((id) => $(id).classList.add('hidden'));
       validar();

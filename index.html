@@ -11801,7 +11801,6 @@ function validar(mostrarTodo = false) {
       if (n >= MAX_POR_RESERVA) avisos.push(`Reserva muy ocupada (${n} artículos; máximo observado ${MAX_POR_RESERVA}).`);
       const z1 = seleccion && seleccion.u ? zonaDe(canon(seleccion.u)) : '';
       if (z1 && z1 !== v.zona) avisos.push(`Zona distinta a la Ubicación 1 (${z1}); ocurre en ~12% de los casos.`);
-      if (seleccion && seleccion.r && canon(seleccion.r) !== v.code) avisos.push(`En el Excel maestro este artículo tiene la reserva ${seleccion.r}.`);
     }
   }
   pintarCampo(ubIn, $('err-ubReserva'), mUb, tocado.ub || mostrarTodo, !mUb && !v.vacio);

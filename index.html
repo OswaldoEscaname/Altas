@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0A0F16">
+<script>(function(){try{if(localStorage.getItem('temaApp')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
 <title>Gestión de Reservas · Universal Sept 2026</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
@@ -12,14 +13,21 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{color-scheme:dark;--text:#E8EDF5;--text2:#CBD5E1;--muted:#93A0B4;--line:#263041;--canvas:#0A0F16;--surface:#121923;--surface2:#0E141D;--surface3:#1A2331;--amber:#F5B301;--amber-soft:rgba(245,179,1,.12);--amber-line:rgba(245,179,1,.42);--bad:#F87171}
+  :root{color-scheme:dark;--text:#E8EDF5;--text2:#CBD5E1;--muted:#93A0B4;--line:#263041;--canvas:#0A0F16;--surface:#121923;--surface2:#0E141D;--surface3:#1A2331;--amber:#F5B301;--amber-soft:rgba(245,179,1,.12);--amber-line:rgba(245,179,1,.42);--bad:#F87171;
+    --dropdown:#172030;--dropdown-border:#2E3A4E;--tag-bg:#263041;--tag-text:#B8C4D6;--scrollbar:#2F3B4E;--select-arrow:%2393A0B4;
+    --c-surface:#1a1f26;--c-surface2:#212832;--c-border:#2b323c;--c-text:#e9ecf1;--c-muted:#9aa5b5;--c-muted2:#7d8898;--c-amber:#f0a202;--c-amber-dim:#7a5709;--c-green:#4f9d6e;--c-red:#e0563a}
+  :root[data-theme="light"]{color-scheme:light;--text:#0F172A;--text2:#334155;--muted:#64748B;--line:#E2E8F0;--canvas:#F3F5F8;--surface:#FFFFFF;--surface2:#F8FAFC;--surface3:#EEF2F7;--amber:#D98B00;--amber-soft:rgba(217,139,0,.12);--amber-line:rgba(217,139,0,.4);--bad:#DC2626;
+    --dropdown:#FFFFFF;--dropdown-border:#E2E8F0;--tag-bg:#F1F5F9;--tag-text:#475569;--scrollbar:#CBD5E1;--select-arrow:%2364748B;
+    --c-surface:#FFFFFF;--c-surface2:#F8FAFC;--c-border:#E2E8F0;--c-text:#1E293B;--c-muted:#64748B;--c-muted2:#94A3B8;--c-amber:#B45309;--c-amber-dim:#E8C27A;--c-green:#047857;--c-red:#DC2626}
   *{box-sizing:border-box}
   body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--canvas);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
   body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(900px 420px at 88% -8%,rgba(245,179,1,.11),transparent 60%),radial-gradient(760px 460px at -8% 0,rgba(59,91,255,.14),transparent 60%)}
+  :root[data-theme="light"] body::before{background:radial-gradient(900px 420px at 88% -8%,rgba(217,139,0,.14),transparent 60%),radial-gradient(760px 420px at -8% 0,rgba(59,91,255,.07),transparent 60%)}
   .mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
   .bb{border-bottom:1px solid var(--line)}
 
   .topbar{position:sticky;top:0;z-index:40;background:rgba(10,15,22,.80);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
+  :root[data-theme="light"] .topbar{background:rgba(255,255,255,.82)}
   .logo{width:42px;height:42px;border-radius:13px;background:var(--amber);color:#111827;display:grid;place-items:center;flex:none;box-shadow:0 8px 22px -8px rgba(245,179,1,.55)}
   .pill{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--text2)}
 
@@ -27,7 +35,7 @@
   .btn:active{transform:translateY(1px)}
   .btn-primary{background:var(--amber);color:#111827}
   .btn-primary:hover{background:#FFC61F;box-shadow:0 10px 24px -10px rgba(245,179,1,.65)}
-  .btn-ghost{background:var(--surface3);border-color:#2A3547;color:var(--text2)}
+  .btn-ghost{background:var(--surface3);border-color:var(--line);color:var(--text2)}
   .btn-ghost:hover{background:#212C3D}
   .btn-danger{background:#DC2626;color:#fff}
   .btn-danger:hover{background:#EF4444}
@@ -42,37 +50,38 @@
   button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 
   .card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:0 1px 2px rgba(0,0,0,.3),0 18px 40px -22px rgba(0,0,0,.65)}
+  :root[data-theme="light"] .card{box-shadow:0 1px 2px rgba(15,23,42,.04),0 12px 28px -16px rgba(15,23,42,.14)}
   .card-b{padding:24px}
   .split{display:grid;gap:24px}
   @media(min-width:1024px){.split{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
 
   .stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 18px;min-width:132px}
-  .stat-n{display:block;font-size:26px;line-height:1.1;font-weight:700;letter-spacing:-.02em;color:#fff}
+  .stat-n{display:block;font-size:26px;line-height:1.1;font-weight:700;letter-spacing:-.02em;color:var(--text)}
   .stat-l{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
 
   .seg{display:inline-flex;padding:4px;background:var(--surface2);border:1px solid var(--line);border-radius:14px;gap:4px}
   .seg-btn{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted);transition:background .15s,color .15s;cursor:pointer}
   .seg-btn:hover{color:var(--text)}
-  .seg-btn.on{background:var(--surface3);color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4),inset 0 0 0 1px #2E3A4E}
+  .seg-btn.on{background:var(--surface3);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.4),inset 0 0 0 1px #2E3A4E}
   .seg-count{font-size:11px;background:var(--amber);color:#111827;border-radius:999px;padding:1px 8px;font-weight:700}
 
   .label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text2)}
   .label small{font-weight:500;color:var(--muted)}
-  .field{width:100%;height:48px;background:var(--surface2);border:1.5px solid #2A3547;border-radius:12px;padding:0 14px;font-size:15px;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
-  .field::placeholder{color:#5F6D82}
+  .field{width:100%;height:48px;background:var(--surface2);border:1.5px solid var(--line);border-radius:12px;padding:0 14px;font-size:15px;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
+  .field::placeholder{color:var(--muted)}
   .field:focus{border-color:var(--amber);box-shadow:0 0 0 4px rgba(245,179,1,.22)}
   .field.err{border-color:var(--bad);background:rgba(239,68,68,.08);box-shadow:0 0 0 4px rgba(239,68,68,.14)}
   .field.ok{border-color:rgba(52,211,153,.65)}
   .field-code{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:600;letter-spacing:.03em;font-size:16px}
-  select.field{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2393A0B4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
-  select.field option{background:#131A24;color:var(--text)}
+  select.field{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='var(--select-arrow)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+  select.field option{background:var(--surface2);color:var(--text)}
 
   .ficha{background:var(--surface2);border:1px solid var(--line);border-radius:16px;padding:4px 18px}
-  .ficha-row{padding:13px 0;border-bottom:1px dashed #2A3547}
+  .ficha-row{padding:13px 0;border-bottom:1px dashed var(--line)}
   .ficha-row:last-child{border-bottom:0}
   .ficha-k{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:3px}
   .ficha-v{display:block;width:100%;background:transparent;border:0;outline:none;font-size:15px;font-weight:600;color:var(--text);padding:0;resize:none;cursor:default;font-family:inherit}
-  .ficha-v::placeholder{color:#465267}
+  .ficha-v::placeholder{color:var(--muted)}
 
   .banner{border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500}
   .banner-ok{background:rgba(16,185,129,.12);color:#6EE7B7;border:1px solid rgba(52,211,153,.35)}
@@ -84,41 +93,42 @@
   .tbl tbody tr:hover td{background:#161E2A}
   .chip-ub{display:inline-flex;position:relative;overflow:hidden;font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:600;font-size:13px;color:#FCE9A6;background:var(--amber-soft);border:1px solid var(--amber-line);border-radius:8px;padding:3px 10px 3px 15px;white-space:nowrap}
   .chip-ub::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:repeating-linear-gradient(-45deg,#0A0F16 0 3px,var(--amber) 3px 6px)}
-  .qty{display:inline-block;min-width:46px;text-align:center;font-weight:700;background:var(--surface3);color:#fff;border-radius:999px;padding:3px 12px}
+  .qty{display:inline-block;min-width:46px;text-align:center;font-weight:700;background:var(--surface3);color:var(--text);border-radius:999px;padding:3px 12px}
 
-  .ac-dropdown{position:absolute;z-index:60;left:0;right:0;top:100%;margin-top:6px;background:#172030;border:1px solid #2E3A4E;border-radius:14px;box-shadow:0 24px 50px -14px rgba(0,0,0,.75);max-height:300px;overflow-y:auto;display:none;padding:6px}
+  .ac-dropdown{position:absolute;z-index:60;left:0;right:0;top:100%;margin-top:6px;background:var(--dropdown);border:1px solid var(--dropdown-border);border-radius:14px;box-shadow:0 24px 50px -14px rgba(0,0,0,.75);max-height:300px;overflow-y:auto;display:none;padding:6px}
   .ac-dropdown.show{display:block}
   .ac-item{padding:9px 10px;border-radius:10px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center;color:var(--text)}
   .ac-item:hover,.ac-item.active{background:var(--amber-soft)}
   .ac-code{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:600;font-size:13px}
   .ac-desc{font-size:12px;color:var(--muted);flex:1;margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .ac-tag{font-size:10.5px;padding:2px 8px;border-radius:999px;background:#263041;color:#B8C4D6;white-space:nowrap;font-weight:600}
+  .ac-tag{font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--tag-bg);color:var(--tag-text);white-space:nowrap;font-weight:600}
   .ac-tag.pat{background:var(--amber);color:#111827}
   .ac-tag.warn{background:rgba(245,158,11,.20);color:#FCD34D}
   .ac-empty{padding:12px;font-size:13px;color:#7B8899;text-align:center}
   ::-webkit-scrollbar{width:8px;height:8px}
-  ::-webkit-scrollbar-thumb{background:#2F3B4E;border-radius:4px}
+  ::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:4px}
 
   .overlay{position:fixed;inset:0;background:rgba(2,6,12,.68);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);z-index:50;padding:16px;align-items:center;justify-content:center}
-  .modal{background:var(--surface);border:1px solid #2A3547;border-radius:22px;max-width:420px;width:100%;padding:24px;box-shadow:0 30px 70px -20px rgba(0,0,0,.8);animation:pop .18s ease-out}
+  :root[data-theme="light"] .overlay{background:rgba(15,23,42,.45)}
+  .modal{background:var(--surface);border:1px solid var(--line);border-radius:22px;max-width:420px;width:100%;padding:24px;box-shadow:0 30px 70px -20px rgba(0,0,0,.8);animation:pop .18s ease-out}
   .modal-ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none}
   .ico-amber{background:rgba(245,179,1,.15);color:var(--amber)}
   .ico-red{background:rgba(239,68,68,.15);color:#F87171}
   @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
-  .spin{width:14px;height:14px;border:2px solid #34415A;border-top-color:var(--amber);border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
+  .spin{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--amber);border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
   @keyframes rot{to{transform:rotate(360deg)}}
 
-  /* Ajustes de las utilidades de Tailwind usadas, para fondo oscuro */
-  body .text-slate-400{color:#7B8899}
-  body .text-slate-500,body .text-slate-600{color:var(--muted)}
-  body .text-slate-700{color:var(--text2)}
-  body .text-red-500,body .text-red-600{color:#F87171}
-  body .text-emerald-600,body .text-emerald-700{color:#6EE7B7}
-  body .text-amber-600,body .text-amber-700{color:#FCD34D}
-  body .bg-slate-100{background:var(--surface3)}
-  body .bg-amber-50{background:rgba(245,179,1,.10)}
-  body .border-amber-200{border-color:rgba(245,179,1,.38)}
-  body .text-amber-900{color:#FDE68A}
+  /* Ajustes de las utilidades de Tailwind usadas (cada tema trae su propia versión) */
+  html:not([data-theme="light"]) .text-slate-400{color:#7B8899}
+  html:not([data-theme="light"]) .text-slate-500,html:not([data-theme="light"]) .text-slate-600{color:var(--muted)}
+  html:not([data-theme="light"]) .text-slate-700{color:var(--text2)}
+  html:not([data-theme="light"]) .text-red-500,html:not([data-theme="light"]) .text-red-600{color:#F87171}
+  html:not([data-theme="light"]) .text-emerald-600,html:not([data-theme="light"]) .text-emerald-700{color:#6EE7B7}
+  html:not([data-theme="light"]) .text-amber-600,html:not([data-theme="light"]) .text-amber-700{color:#FCD34D}
+  html:not([data-theme="light"]) .bg-slate-100{background:var(--surface3)}
+  html:not([data-theme="light"]) .bg-amber-50{background:rgba(245,179,1,.10)}
+  html:not([data-theme="light"]) .border-amber-200{border-color:rgba(245,179,1,.38)}
+  html:not([data-theme="light"]) .text-amber-900{color:#FDE68A}
   input[type=checkbox]{accent-color:var(--amber)}
 
   /* ===== Mejoras de legibilidad y uso (solo estilo) ===== */
@@ -130,18 +140,18 @@
   .stat-n,.qty,#totalCount,.seg-count{font-variant-numeric:tabular-nums}
   .stat-n{font-weight:800}
   .label{font-size:13.5px;letter-spacing:.005em}
-  .field::placeholder{color:#6D7B91}
+  .field::placeholder{color:var(--muted)}
   .field-code{font-size:17px;font-weight:700;letter-spacing:.04em}
   .field.ok{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2334D399' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:42px}
   .ficha{transition:border-color .2s,box-shadow .2s}
   .ficha:has(textarea:not(:placeholder-shown)){border-color:var(--amber-line);box-shadow:0 0 0 3px rgba(245,179,1,.08)}
-  .ficha:has(textarea:not(:placeholder-shown)) #articulo{color:#fff}
+  .ficha:has(textarea:not(:placeholder-shown)) #articulo{color:var(--text)}
   .ficha-k{letter-spacing:.02em}
   .btn-primary:disabled{background:#222C3B;color:#6F7E93;opacity:1;box-shadow:none}
-  .btn-ghost{color:#DCE4F0}
+  html:not([data-theme="light"]) .btn-ghost{color:#DCE4F0}
   .ac-item{padding:10px 12px}
   .ac-item.active{background:var(--amber-soft);box-shadow:inset 3px 0 0 var(--amber)}
-  .ac-code{font-size:13.5px;color:#fff}
+  .ac-code{font-size:13.5px;color:var(--text)}
   .ac-desc{font-size:12.5px}
   .chip-ub{font-size:14px;font-weight:700;padding:4px 11px 4px 16px}
   .tbl th{font-size:12.5px;letter-spacing:.02em}
@@ -185,7 +195,7 @@
   }
 
   /* ===== Consulta: estilo del Localizador de inventario ===== */
-  #secConsulta{--c-surface:#1a1f26;--c-surface2:#212832;--c-border:#2b323c;--c-text:#e9ecf1;--c-muted:#8993a3;--c-muted2:#5c6675;--c-amber:#f0a202;--c-amber-dim:#7a5709;--c-green:#4f9d6e;--c-red:#e0563a;font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--c-text)}
+  #secConsulta{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--c-text)}
   #secConsulta .c-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
   #secConsulta .c-brand{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.02em;font-size:22px;text-transform:uppercase;line-height:1.2}
   #secConsulta .c-brand span{color:var(--c-amber)}
@@ -237,7 +247,6 @@
   }
 
   /* ===== Consulta v2: tipografía y tamaños más cómodos de leer ===== */
-  #secConsulta{--c-muted:#9aa5b5;--c-muted2:#7d8898}
   #secConsulta .c-brand{font-size:26px}
   #secConsulta .c-sub{font-size:13px}
   #secConsulta .c-icon{width:50px;height:56px}
@@ -287,6 +296,33 @@
     #secConsulta .rqty{min-width:54px;padding:0 6px}
     #secConsulta .rdel{width:40px}
   }
+
+  /* ===== Varios artículos por captura ===== */
+  .art-list{display:flex;flex-direction:column;gap:14px;margin-bottom:14px}
+  .art-row{background:var(--surface2);border:1px solid var(--line);border-radius:16px;padding:14px 16px;transition:border-color .2s}
+  .art-row:has(.field.err){border-color:rgba(248,113,113,.55)}
+  .art-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .art-num{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:700;font-size:14.5px}
+  .art-tag{font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--surface3);color:var(--muted)}
+  .art-tag.req{background:var(--amber-soft);color:#FCE9A6}
+  .art-del{margin-left:auto;font-size:13px;font-weight:500;color:var(--muted);padding:5px 10px;border-radius:8px;cursor:pointer}
+  .art-del:hover{color:#FCA5A5;background:rgba(239,68,68,.12)}
+  .art-grid{display:grid;gap:12px;grid-template-columns:minmax(0,1fr) 132px}
+  .art-ficha{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+  .art-name{font-weight:600;font-size:14.5px;color:var(--text);line-height:1.35;margin-bottom:6px;overflow-wrap:anywhere}
+  .art-meta{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:12.5px;color:var(--muted)}
+  .art-meta .k{margin-right:6px}
+  .art-meta b{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:600;color:var(--text)}
+  .btn-add{width:100%;border-style:dashed}
+  .art-count{font-size:11.5px;font-weight:700;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--muted)}
+  .res-ub{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding-bottom:14px;border-bottom:1px dashed var(--line)}
+  .res-list{list-style:none;margin:0;padding:6px 0 0}
+  .res-list li{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .res-name{color:var(--text2);overflow-wrap:anywhere}
+  .res-qty{font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .res-total{display:flex;justify-content:space-between;padding-top:14px;font-size:13.5px;color:var(--muted)}
+  .res-total b{color:var(--amber);font-weight:700}
+  @media(max-width:520px){.art-grid{grid-template-columns:minmax(0,1fr) 108px}.art-row{padding:12px}}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -303,6 +339,7 @@
     </div>
     <div class="flex items-center gap-2">
       <span class="pill hidden sm:inline-flex"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span><span id="totalCount">0</span> reservas</span></span>
+      <button id="btnTema" onclick="alternarTema()" class="btn btn-ghost !px-0 w-[42px]" title="Cambiar tema" aria-label="Cambiar entre modo claro y oscuro"></button>
       <button onclick="cargarReservas()" class="btn btn-ghost !px-0 w-[42px]" title="Refrescar" aria-label="Refrescar">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
       </button>
@@ -336,10 +373,10 @@
     <form id="formAlta" class="split" novalidate autocomplete="off">
       <div class="card"><div class="card-b">
         <h3 class="text-lg font-bold">Nueva reserva</h3>
-        <p class="text-sm text-slate-500 mb-6">Indica la ubicación y elige el artículo del catálogo.</p>
+        <p class="text-sm text-slate-500 mb-6">Indica la ubicación y agrega hasta 6 artículos. Solo el primero es obligatorio.</p>
 
-        <div class="relative mb-5">
-          <label class="label" for="ubReserva">Ubicación de reserva <span class="text-red-500">*</span></label>
+        <div class="relative mb-6">
+          <label class="label" for="ubReserva">Ubicación de reserva <span class="text-red-500">*</span> <small>(la misma para todos)</small></label>
           <input type="text" id="ubReserva" autocomplete="off" maxlength="12" role="combobox" aria-controls="ac-ubReserva"
             class="field field-code uppercase" placeholder="Ej. C24T4, E01R8, DR08T3">
           <div id="ac-ubReserva" class="ac-dropdown" role="listbox"></div>
@@ -347,20 +384,14 @@
           <p id="warn-ubReserva" class="text-xs mt-1.5 hidden" aria-live="polite"></p>
         </div>
 
-        <div class="relative mb-5">
-          <label class="label" for="alterno">Artículo <span class="text-red-500">*</span> <small>(catálogo maestro: 11,133 artículos)</small></label>
-          <input type="text" id="alterno" autocomplete="off" maxlength="30" class="field uppercase" placeholder="Alterno, clave, corto o descripción (ej. 00037_1, lija 220)">
-          <div id="ac-alterno" class="ac-dropdown"></div>
-          <p id="err-alterno" class="text-xs text-red-600 mt-1.5 hidden" aria-live="polite"></p>
-        </div>
+        <div id="filasArticulos" class="art-list"></div>
 
-        <div class="mb-6" style="max-width:220px">
-          <label class="label" for="cantidad">Cantidad <span class="text-red-500">*</span></label>
-          <input type="number" id="cantidad" min="0" step="any" value="0" class="field">
-          <p id="err-cantidad" class="text-xs text-red-600 mt-1.5 hidden" aria-live="polite"></p>
-        </div>
+        <button type="button" id="btnAgregar" class="btn btn-ghost btn-add">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Agregar otro artículo <span id="contFilas" class="art-count">1/6</span>
+        </button>
 
-        <div class="flex flex-col sm:flex-row gap-3">
+        <div class="flex flex-col sm:flex-row gap-3 mt-6">
           <button type="submit" id="btnGuardar" disabled class="btn btn-primary btn-lg sm:flex-1">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>Guardar reserva
           </button>
@@ -371,14 +402,9 @@
       </div></div>
 
       <aside class="card"><div class="card-b">
-        <h3 class="text-lg font-bold">Artículo seleccionado</h3>
-        <p class="text-sm text-slate-500 mb-5">Se completa solo al elegir el artículo.</p>
-        <div class="ficha">
-          <div class="ficha-row"><span class="ficha-k">Artículo</span><textarea id="articulo" readonly tabindex="-1" rows="2" class="ficha-v" placeholder="—"></textarea></div>
-          <div class="ficha-row"><span class="ficha-k">Corto</span><input type="text" id="corto" readonly tabindex="-1" class="ficha-v mono uppercase" placeholder="—"></div>
-          <div class="ficha-row"><span class="ficha-k">Clave</span><input type="text" id="clave" readonly tabindex="-1" class="ficha-v mono uppercase" placeholder="—"></div>
-          <div class="ficha-row"><span class="ficha-k">Ubicación 1 (principal)</span><input type="text" id="ubPrincipal" readonly tabindex="-1" class="ficha-v mono uppercase" placeholder="—"></div>
-        </div>
+        <h3 class="text-lg font-bold">Resumen de la captura</h3>
+        <p class="text-sm text-slate-500 mb-5">Lo que se guardará al pulsar el botón.</p>
+        <div id="resumen"></div>
       </div></aside>
     </form>
   </section>
@@ -11812,13 +11838,24 @@ const nf = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 });
 let CATALOGO = [];
 let RESERVAS = [];
 let deleteTargetRow = null;
-let seleccion = null;                 // artículo elegido del catálogo maestro
 let guardando = false;
-const tocado = { ub: false, alt: false, cant: false };
+const tocado = { ub: false };
 let ubConservada = '';
 const LS_UB = 'ultimaUbicacionReserva';
 function guardarUltimaUb(v) { try { localStorage.setItem(LS_UB, v); } catch (e) { /* sin almacenamiento */ } }
 function leerUltimaUb() { try { return localStorage.getItem(LS_UB) || ''; } catch (e) { return ''; } }
+const ICO_SOL = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>';
+const ICO_LUNA = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1110 3.2a6.8 6.8 0 1010 11.3z"></path></svg>';
+function temaActual() { return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+function aplicarTema(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem('temaApp', t); } catch (e) { /* sin almacenamiento */ }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', t === 'light' ? '#F3F5F8' : '#0A0F16');
+  const btn = $('btnTema');
+  if (btn) btn.innerHTML = t === 'light' ? ICO_LUNA : ICO_SOL;
+}
+function alternarTema() { aplicarTema(temaActual() === 'light' ? 'dark' : 'light'); }
 const ICO_TRASH = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>';
 
 /* =========================================================
@@ -11953,21 +11990,110 @@ function proveedorAlterno(v) {
     html: `<span class="ac-code">${esc(x.a)}</span><span class="ac-desc">${esc(x.d)}</span>${x.u ? `<span class="ac-tag">${esc(x.u)}</span>` : ''}<span class="ac-tag pat">${esc(x.k)}</span>`
   }));
 }
-function seleccionarAlterno(item) {
-  seleccion = item;
-  $('alterno').value = item.a.toUpperCase();
-  autofillCamposAuto(item);
-  tocado.alt = true;
+/* ---- Filas de artículos: hasta 6 por captura, solo la primera es obligatoria ---- */
+const MAX_ARTICULOS = 6;
+let filas = [];
+let uidFila = 0;
+
+function crearFila() {
+  const f = { uid: ++uidFila, sel: null, tAlt: false, tCant: false, guardada: false };
+  const el = document.createElement('div');
+  el.className = 'art-row';
+  el.innerHTML = `
+    <div class="art-head">
+      <span class="art-num"></span>
+      <span class="art-tag"></span>
+      <button type="button" class="art-del" aria-label="Quitar este artículo">Quitar</button>
+    </div>
+    <div class="art-grid">
+      <div class="relative">
+        <label class="label" for="alt-${f.uid}">Artículo <small>(alterno, clave, corto o descripción)</small></label>
+        <input type="text" id="alt-${f.uid}" class="field uppercase in-alterno" autocomplete="off" maxlength="30" placeholder="Ej. 00037_1, lija 220">
+        <div class="ac-dropdown" role="listbox"></div>
+        <p class="err-alt text-xs text-red-600 mt-1.5 hidden" aria-live="polite"></p>
+      </div>
+      <div>
+        <label class="label" for="cant-${f.uid}">Cantidad</label>
+        <input type="number" id="cant-${f.uid}" class="field in-cant" min="0" step="any" value="0">
+        <p class="err-cant text-xs text-red-600 mt-1.5 hidden" aria-live="polite"></p>
+      </div>
+    </div>
+    <div class="art-ficha hidden">
+      <div class="art-name"></div>
+      <div class="art-meta">
+        <span><span class="k">Corto</span><b class="v-corto"></b></span>
+        <span><span class="k">Clave</span><b class="v-clave"></b></span>
+        <span><span class="k">Ubicación 1</span><b class="v-u1"></b></span>
+      </div>
+    </div>`;
+  f.el = el;
+  f.alt = el.querySelector('.in-alterno');
+  f.cant = el.querySelector('.in-cant');
+  f.errAlt = el.querySelector('.err-alt');
+  f.errCant = el.querySelector('.err-cant');
+  f.ficha = el.querySelector('.art-ficha');
+  crearAc(f.alt, el.querySelector('.ac-dropdown'), proveedorAlterno, (o) => seleccionarEnFila(f, o.item), 'Sin coincidencias en el catálogo maestro');
+  f.alt.addEventListener('input', () => {
+    const v = f.alt.value.toUpperCase();
+    if (f.alt.value !== v) f.alt.value = v;
+    f.tAlt = true; f.sel = null;
+    const ex = v.trim() ? buscarExacto(v.trim()) : [];
+    if (ex.length === 1) f.sel = ex[0];
+    pintarFicha(f); validar();
+  });
+  f.alt.addEventListener('blur', () => { f.tAlt = true; validar(); });
+  f.cant.addEventListener('input', () => { f.tCant = true; validar(); });
+  f.cant.addEventListener('blur', () => { f.tCant = true; validar(); });
+  el.querySelector('.art-del').addEventListener('click', () => quitarFila(f));
+  return f;
+}
+function pintarFicha(f) {
+  const it = f.sel;
+  f.ficha.classList.toggle('hidden', !it);
+  if (!it) return;
+  f.el.querySelector('.art-name').textContent = (it.d || '').toUpperCase();
+  f.el.querySelector('.v-corto').textContent = (it.c || '').toUpperCase();
+  f.el.querySelector('.v-clave').textContent = (it.k || '').toUpperCase();
+  f.el.querySelector('.v-u1').textContent = it.u || '—';
+}
+function seleccionarEnFila(f, item) {
+  f.sel = item;
+  f.alt.value = item.a.toUpperCase();
+  f.tAlt = true;
+  pintarFicha(f);
   validar();
+  f.cant.focus(); f.cant.select();
 }
-function autofillCamposAuto(item) {
-  $('corto').value = (item.c || '').toUpperCase();
-  $('clave').value = (item.k || '').toUpperCase();
-  $('ubPrincipal').value = item.u || '';
-  $('articulo').value = (item.d || '').toUpperCase();
+function renumerar() {
+  filas.forEach((f, i) => {
+    f.el.querySelector('.art-num').textContent = `Artículo ${i + 1}`;
+    const tag = f.el.querySelector('.art-tag');
+    tag.textContent = i === 0 ? 'Obligatorio' : 'Opcional';
+    tag.classList.toggle('req', i === 0);
+    f.el.querySelector('.art-del').classList.toggle('hidden', filas.length <= 1);
+  });
+  $('contFilas').textContent = `${filas.length}/${MAX_ARTICULOS}`;
+  $('btnAgregar').classList.toggle('hidden', filas.length >= MAX_ARTICULOS);
 }
-function limpiarCamposAuto() {
-  ['corto', 'clave', 'ubPrincipal', 'articulo'].forEach((id) => { $(id).value = ''; });
+function agregarFila(enfocar = true) {
+  if (filas.length >= MAX_ARTICULOS) return null;
+  const f = crearFila();
+  filas.push(f);
+  $('filasArticulos').appendChild(f.el);
+  renumerar(); validar();
+  if (enfocar) f.alt.focus();
+  return f;
+}
+function quitarFila(f) {
+  if (filas.length <= 1) return;
+  filas = filas.filter((x) => x !== f);
+  f.el.remove();
+  renumerar(); validar();
+}
+function resetFilas() {
+  filas.forEach((f) => f.el.remove());
+  filas = [];
+  agregarFila(false);
 }
 
 /* ---- Ubicación de reserva (predictivo según la estructura del Excel) ---- */
@@ -11997,91 +12123,137 @@ function pintarCampo(input, errEl, msg, mostrar, ok) {
   if (mostrar && msg) { errEl.textContent = msg; errEl.classList.remove('hidden'); } else errEl.classList.add('hidden');
 }
 
-function validar(mostrarTodo = false) {
-  /* Alterno / artículo */
-  const alt = $('alterno');
-  let mAlt = '';
-  if (!seleccion) {
-    const v = alt.value.trim().toUpperCase();
-    if (!v) mAlt = 'Elige un artículo del catálogo maestro.';
-    else mAlt = buscarExacto(v).length > 1 ? 'Varios artículos usan ese código: elige uno de la lista.' : 'Ese alterno no existe en el catálogo maestro.';
-  }
-  pintarCampo(alt, $('err-alterno'), mAlt, tocado.alt || mostrarTodo, !!seleccion);
+function vCantidadFila(f) {
+  const raw = f.cant.value;
+  if (raw === '') return 'Obligatoria (usa 0 si aún no hay unidades).';
+  const c = Number(raw);
+  if (Number.isNaN(c)) return 'Debe ser un número.';
+  if (c < 0) return 'No puede ser negativa.';
+  if (f.sel && f.sel.n !== 'KG' && !Number.isInteger(c)) return 'Solo enteros (únicamente KG admite decimales).';
+  if (/\.\d{3,}/.test(raw)) return 'Máximo 2 decimales.';
+  return '';
+}
 
-  /* Ubicación de reserva */
+function validar(mostrarTodo = false) {
+  /* Ubicación de reserva (una sola para todo el lote) */
   const ubIn = $('ubReserva');
   const v = validarUbic(ubIn.value, 'u2');
   let mUb = '';
-  const avisos = [];
-  let okTxt = '';
   if (v.vacio) mUb = 'Obligatoria.';
   else if (!v.ok) mUb = v.msg;
-  else {
-    if (seleccion && seleccion.u && canon(seleccion.u) === v.code) mUb = `La reserva no puede ser la misma que la Ubicación 1 del artículo (${seleccion.u}).`;
-    else if (seleccion && RESERVAS.some((r) => canon(r.ub) === v.code && normId(r.alterno) === normId(seleccion.a))) mUb = 'Este artículo ya tiene una reserva registrada en esa ubicación.';
-    else {
-      const n = ocupacionDe(v.code);
-      okTxt = `${TIPO_SUG[v.tipo] || v.tipo} · área ${v.zona}${n ? ` · ${n} artículo${n === 1 ? '' : 's'} ya la usa${n === 1 ? '' : 'n'}` : ' · libre'}`;
-      if (n >= MAX_POR_RESERVA) avisos.push(`Reserva muy ocupada (${n} artículos; máximo observado ${MAX_POR_RESERVA}).`);
-      const z1 = seleccion && seleccion.u ? zonaDe(canon(seleccion.u)) : '';
-      if (z1 && z1 !== v.zona) avisos.push(`Área distinta a la Ubicación 1 (${z1}); ocurre en ~12% de los casos.`);
-    }
-  }
   pintarCampo(ubIn, $('err-ubReserva'), mUb, tocado.ub || mostrarTodo, !mUb && !v.vacio);
+
+  /* Artículos: la fila 1 es obligatoria; las demás se ignoran si están vacías */
+  const usados = new Set();
+  const lote = [];
+  let filasOk = true;
+  let zonasDist = [];
+  filas.forEach((f, i) => {
+    const txt = f.alt.value.trim().toUpperCase();
+    if (i > 0 && !f.sel && txt === '') {
+      pintarCampo(f.alt, f.errAlt, '', false, false);
+      pintarCampo(f.cant, f.errCant, '', false, false);
+      return;
+    }
+    let mAlt = '';
+    if (!f.sel) {
+      if (!txt) mAlt = i === 0 ? 'Elige un artículo del catálogo maestro.' : 'Elige un artículo o quita esta fila.';
+      else mAlt = buscarExacto(txt).length > 1 ? 'Varios artículos usan ese código: elige uno de la lista.' : 'Ese alterno no existe en el catálogo maestro.';
+    } else {
+      if (v.ok) {
+        if (f.sel.u && canon(f.sel.u) === v.code) mAlt = `La reserva no puede ser la misma que la Ubicación 1 del artículo (${f.sel.u}).`;
+        else if (RESERVAS.some((r) => canon(r.ub) === v.code && normId(r.alterno) === normId(f.sel.a))) mAlt = 'Este artículo ya tiene una reserva registrada en esa ubicación.';
+      }
+      if (!mAlt) {
+        const k = normId(f.sel.a);
+        if (usados.has(k)) mAlt = 'Este artículo ya está en la lista.'; else usados.add(k);
+      }
+    }
+    const mCant = vCantidadFila(f);
+    pintarCampo(f.alt, f.errAlt, mAlt, f.tAlt || mostrarTodo, !!f.sel && !mAlt);
+    pintarCampo(f.cant, f.errCant, mCant, f.tCant || mostrarTodo, false);
+    if (mAlt || mCant) filasOk = false;
+    else if (f.sel) {
+      lote.push(f);
+      const z1 = f.sel.u ? zonaDe(canon(f.sel.u)) : '';
+      if (v.ok && z1 && z1 !== v.zona && !zonasDist.includes(z1)) zonasDist.push(z1);
+    }
+  });
+  const primeraOk = !!(filas[0] && filas[0].sel);
+
+  /* Mensaje bajo la ubicación */
   const w = $('warn-ubReserva');
   if (!mUb && !v.vacio && (tocado.ub || mostrarTodo)) {
+    const n = ocupacionDe(v.code);
+    const avisos = [];
+    if (n + lote.length > MAX_POR_RESERVA) avisos.push(`Reserva muy ocupada (${n + lote.length} artículos con esta captura; máximo observado ${MAX_POR_RESERVA}).`);
+    if (zonasDist.length) avisos.push(`Área distinta a la Ubicación 1 (${zonasDist.join(', ')}); ocurre en ~12% de los casos.`);
+    const okTxt = `${TIPO_SUG[v.tipo] || v.tipo} · área ${v.zona}${n ? ` · ${n} artículo${n === 1 ? '' : 's'} ya la usa${n === 1 ? '' : 'n'}` : ' · libre'}`;
     w.className = 'text-xs mt-1 ' + (avisos.length ? 'text-amber-700' : 'text-emerald-700');
-    w.textContent = (avisos.length ? '⚠ ' + avisos.join(' ') + ' ' : '✓ ') + (avisos.length ? '' : okTxt);
+    w.textContent = avisos.length ? '⚠ ' + avisos.join(' ') : '✓ ' + okTxt;
     w.classList.remove('hidden');
   } else w.classList.add('hidden');
 
-  /* Cantidad */
-  const cIn = $('cantidad'), cRaw = cIn.value;
-  let mC = '';
-  if (cRaw === '') mC = 'Obligatoria (usa 0 si aún no hay unidades).';
-  else {
-    const c = Number(cRaw);
-    if (Number.isNaN(c)) mC = 'Debe ser un número.';
-    else if (c < 0) mC = 'No puede ser negativa.';
-    else if (seleccion && seleccion.n !== 'KG' && !Number.isInteger(c)) mC = 'Solo enteros (únicamente KG admite decimales).';
-    else if (/\.\d{3,}/.test(cRaw)) mC = 'Máximo 2 decimales.';
-  }
-  pintarCampo(cIn, $('err-cantidad'), mC, tocado.cant || mostrarTodo, false);
-
-  const pend = [];
-  if (mAlt) pend.push('Alterno');
-  if (mUb) pend.push('Ubicación');
-  if (mC) pend.push('Cantidad');
-  const ok = !pend.length && !guardando;
+  renderResumen(v, lote);
+  const ok = !mUb && primeraOk && filasOk && !guardando;
   $('btnGuardar').disabled = !ok;
-  return { ok, code: v.ok ? v.code : '' };
+  return { ok, code: v.ok ? v.code : '', lote };
+}
+
+function renderResumen(v, lote) {
+  const box = $('resumen');
+  if (!box) return;
+  const total = lote.reduce((s, f) => s + (parseFloat(f.cant.value) || 0), 0);
+  const ubTxt = v.ok ? `<span class="chip-ub">${esc(v.code)}</span>` : '<span class="text-slate-500">—</span>';
+  const items = lote.map((f) => `<li><span class="res-name">${esc((f.sel.d || '').toUpperCase())}</span><span class="res-qty">${nf.format(parseFloat(f.cant.value) || 0)}</span></li>`).join('');
+  box.innerHTML = `
+    <div class="res-ub"><span class="ficha-k">Ubicación de reserva</span>${ubTxt}</div>
+    ${lote.length ? `<ul class="res-list">${items}</ul>
+      <div class="res-total"><span>${lote.length} artículo${lote.length === 1 ? '' : 's'}</span><b>${nf.format(total)} unidades</b></div>`
+      : '<p class="text-sm text-slate-500 mt-4">Elige un artículo para ver aquí el resumen.</p>'}`;
 }
 
 /* =========================================================
-   GUARDAR
+   GUARDAR (uno por uno, en orden, con el mismo formato de siempre)
    ========================================================= */
 $('formAlta').addEventListener('submit', async function (e) {
   e.preventDefault();
   if (guardando) return;
   const r = validar(true);
-  if (!r.ok || !seleccion) { mostrarMsg('Corrige los campos marcados en rojo.', 'error'); return; }
-  const item = seleccion;
-  const reserva = {
-    ub: r.code, corto: item.c.toUpperCase(), clave: item.k.toUpperCase(),
-    alterno: item.a.toUpperCase(), articulo: item.d.toUpperCase(), cantidad: parseFloat($('cantidad').value) || 0
-  };
+  if (!r.ok) { mostrarMsg('Corrige los campos marcados en rojo.', 'error'); return; }
+  const lote = r.lote.slice();
+  const codigo = r.code;
+  let guardadas = 0, fallo = null;
   guardando = true;
   try {
     validar();
-    await guardarReservaEnSheet(reserva);
-    guardarUltimaUb(r.code);
-    ubConservada = r.code;
-    mostrarMsg('Reserva guardada en ' + r.code + '.', 'ok');
-    this.reset();
-    await cargarReservas();
-    $('alterno').focus();
+    for (const f of lote) {
+      const it = f.sel;
+      await guardarReservaEnSheet({
+        ub: codigo, corto: it.c.toUpperCase(), clave: it.k.toUpperCase(),
+        alterno: it.a.toUpperCase(), articulo: it.d.toUpperCase(), cantidad: parseFloat(f.cant.value) || 0
+      });
+      f.guardada = true; guardadas++;
+    }
   } catch (err) {
-    mostrarMsg('Error al guardar: ' + err.message, 'error');
+    fallo = err;
+  }
+  try {
+    if (guardadas) guardarUltimaUb(codigo);
+    if (!fallo) {
+      ubConservada = codigo;
+      mostrarMsg(guardadas === 1 ? 'Reserva guardada en ' + codigo + '.' : guardadas + ' reservas guardadas en ' + codigo + '.', 'ok');
+      this.reset();
+    } else {
+      lote.filter((f) => f.guardada).forEach((f) => { if (filas.length > 1) { filas = filas.filter((x) => x !== f); f.el.remove(); } });
+      renumerar();
+      mostrarMsg(`Se guardaron ${guardadas} de ${lote.length}. Error: ${fallo.message}. Los que faltan siguen en la lista.`, 'error');
+    }
+    await cargarReservas();
+    await new Promise((res) => setTimeout(res, 0));
+    if (filas[0]) filas[0].alt.focus();
+  } catch (err2) {
+    console.error(err2);
   } finally {
     guardando = false;
     try { validar(); } catch (e2) { console.error(e2); }
@@ -12261,34 +12433,23 @@ function exportarXLSX() {
    EVENTOS DEL FORMULARIO / INIT
    ========================================================= */
 function initFormulario() {
-  const alt = $('alterno'), ubIn = $('ubReserva'), cant = $('cantidad');
+  const ubIn = $('ubReserva');
   const ultima = leerUltimaUb();
   if (ultima && validarUbic(ultima, 'u2').ok) { ubIn.value = ultima; tocado.ub = true; }
-  crearAc(alt, $('ac-alterno'), proveedorAlterno, (o) => seleccionarAlterno(o.item), 'Sin coincidencias en el catálogo maestro');
   crearAc(ubIn, $('ac-ubReserva'), proveedorUbic, (o) => { ubIn.value = o.value; tocado.ub = true; validar(); ubIn.dispatchEvent(new Event('input')); ubIn.focus(); }, '');
-
-  alt.addEventListener('input', () => {
-    const v = alt.value.toUpperCase();
-    if (alt.value !== v) alt.value = v;
-    tocado.alt = true; seleccion = null; limpiarCamposAuto();
-    const ex = v.trim() ? buscarExacto(v.trim()) : [];
-    if (ex.length === 1) { seleccion = ex[0]; autofillCamposAuto(ex[0]); }
-    validar();
-  });
   ubIn.addEventListener('input', () => { const v = ubIn.value.toUpperCase(); if (ubIn.value !== v) ubIn.value = v; tocado.ub = true; validar(); });
   ubIn.addEventListener('blur', () => { const c = canon(ubIn.value); if (c) ubIn.value = c; tocado.ub = true; validar(); });
-  alt.addEventListener('blur', () => { tocado.alt = true; validar(); });
-  cant.addEventListener('input', () => { tocado.cant = true; validar(); });
-  cant.addEventListener('blur', () => { tocado.cant = true; validar(); });
+  $('btnAgregar').addEventListener('click', () => agregarFila(true));
+  agregarFila(false);
 
   $('formAlta').addEventListener('reset', () => {
     setTimeout(() => {
-      seleccion = null; limpiarCamposAuto();
-      tocado.ub = tocado.alt = tocado.cant = false;
+      resetFilas();
+      tocado.ub = false;
       if (ubConservada) { $('ubReserva').value = ubConservada; tocado.ub = true; ubConservada = ''; }
       else guardarUltimaUb('');
-      ['ubReserva', 'alterno', 'cantidad'].forEach((id) => $(id).classList.remove('ok', 'err'));
-      ['err-ubReserva', 'err-alterno', 'err-cantidad', 'warn-ubReserva'].forEach((id) => $(id).classList.add('hidden'));
+      $('ubReserva').classList.remove('ok', 'err');
+      ['err-ubReserva', 'warn-ubReserva'].forEach((id) => $(id).classList.add('hidden'));
       validar();
     }, 0);
   });
@@ -12306,6 +12467,7 @@ function mostrarTab(t) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  aplicarTema(temaActual());
   mostrarTab('alta');
   cargarCatalogo();
   initFormulario();

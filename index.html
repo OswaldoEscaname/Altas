@@ -7,6 +7,15 @@
 <meta name="theme-color" content="#0A0F16">
 <script>(function(){try{if(localStorage.getItem('temaApp')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
 <title>Gestión de Reservas · Universal Sept 2026</title>
+
+<!-- PWA: instalable en el teléfono -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Reservas">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12475,6 +12484,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   await cargarReservas();
 });
 
+</script>
+
+<script>
+  /* Registro del service worker: solo da de alta la app para poder instalarla
+     y abrirla sin conexión; no cambia cómo funciona nada de lo de arriba. */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => { /* seguimos sin instalación offline */ });
+    });
+  }
 </script>
 
 </body>
